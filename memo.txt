@@ -1,0 +1,53 @@
+
+目的
+=====
+
+箱庭XSSをバイナリとして攻略．
+
+
+手段
+=====
+箱庭XSSの使っている正規表現による置換を抑制する．
+これを実現するために，.Netの関数を別の関数に置き換える必要が出てきた．
+
+* ネイティブなx86,x64アプリケーションならば，dll injectionを行う事で関数の置き換えが出来る．
+* ネイティブでのdll injectionはサンプルが豊富
+* .Netでは同様の方法が通用しない
+* 中間言語をJIT compileして実行しているため．
+
+
+制約
+* ターゲットとなるアプリケーションを書き換えてから実行しない(箱庭XSSの不正検知が働く)
+  * 実行中に書き換えるのはOK
+  * hoge.exeにパッチを当てて実行，をしないという意味
+* IsDebuggerPresentがfalseを返すような方法を取る
+
+[5],[6]は有用な手法と感じたが，ターゲットとなるアプリケーションを書き換える必要があるため不可
+[1-4]のProfilingAPIを使い，JITCompileのタイミングを受け取ってメソッドを置き換える手法を取ることに．
+
+参考にした記事達
+==================
+
+* http://www.codeproject.com/Articles/17275/Really-Easy-Logging-using-IL-Rewriting-and-the-NET[1]
+* idlファイルがおかしい，サンプルがコンパイル出来ない
+* 別の記事を探すことに
+
+
+* http://www.codeproject.com/Articles/453065/ILRewriting-for-beginners[2]
+ビンゴ
+上記の[1]を読みやすくしたもの，作者は別
+
+* https://msdn.microsoft.com/en-us/magazine/cc188743.aspx[3]
+．Net Internalsの記事
+サンプルは一部書き換えるとコンパイルは通るが，[2]で間に合っているため使用せず
+[1]にある説明をより詳細にしたもの
+
+* http://blogs.msdn.com/b/davbr/archive/2007/03/06/creating-an-il-rewriting-profiler.aspx[4]
+NGENで既にコンパイルされているILもflagを設定することで再度JITコンパイルされるようになる，という内容が書かれている．
+
+* http://www.codeproject.com/Articles/463508/NET-CLR-Injection-Modify-IL-Code-during-Run-time[5]
+はずれ
+書き換え対象のアプリケーションが自身を書き換える場合どうすればよいか，という記事
+
+* http://www.codeproject.com/Articles/37549/CLR-Injection-Runtime-Method-Replacer[6]
+[5]と同様
