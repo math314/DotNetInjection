@@ -23,6 +23,9 @@
     <ClCompile Include="HakoniwaProfiler_i.c">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HakoniwaProfilerFactory.h">
@@ -32,6 +35,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="HakoniwaProfiler_h.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

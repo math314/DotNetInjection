@@ -1,4 +1,5 @@
 #include "HakoniwaProfilerImpl.h"
+#include "Debugger.h"
 
 #include <string>
 #include <wchar.h>
@@ -108,23 +109,23 @@ STDMETHODIMP HakoniwaProfilerImpl::ProfilerDetachSucceeded(void) { return S_OK; 
 STDMETHODIMP HakoniwaProfilerImpl::InitializeForAttach(IUnknown *pCorProfilerInfoUnk, void *pvClientData, UINT cbClientData) { return S_OK; }
 
 STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
-	fprintf(stderr,"HakoniwaProfilerImpl::Initialize()\n");
+	Debugger::printf(L"HakoniwaProfilerImpl::Initialize()\n");
 
 	// get the ICorProfilerInfo interface
 	HRESULT hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo, (LPVOID*)&mCorProfilerInfo);
 	if (FAILED(hr)) {
-		fprintf(stderr,"Error: Failed to get ICorProfilerInfo\n");
+		Debugger::printf(L"Error: Failed to get ICorProfilerInfo\n");
 		return E_FAIL;
 	} else {
-		fprintf(stderr,"Got ICorProfilerInfo\n");
+		Debugger::printf(L"Got ICorProfilerInfo\n");
 	}
 
 	hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (LPVOID*)&mCorProfilerInfo2);
 	if (FAILED(hr)) {
 		mCorProfilerInfo2 = nullptr;
-		fprintf(stderr,"Error: Failed to get ICorProfiler2\n");
+		Debugger::printf(L"Error: Failed to get ICorProfiler2\n");
 	} else {
-		fprintf(stderr,"Got ICorProfilerInfo2\n");
+		Debugger::printf(L"Got ICorProfilerInfo2\n");
 	}
 
 	// Tell the profiler API which events we want to listen to
@@ -132,13 +133,12 @@ STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 
 	hr = SetProfilerEventMask();
 	if (FAILED(hr)) {
-		fprintf(stderr,"Error: Failed to SetProfilerEventMask\n");
+		Debugger::printf(L"Error: Failed to SetProfilerEventMask\n");
 	} else {
-		fprintf(stderr,"SetEventMask()\n");
+		Debugger::printf(L"SetEventMask()\n");
 	}
 
-	fprintf(stderr, "Successfully initialized profiling\n");
-	OutputDebugString(L"Successfully initialized profiling\n");
+	Debugger::printf(L"Successfully initialized profiling\n");
 
 	// m_rewritehelper.SetCorProfilerInfo(mCorProfilerInfo);
 	return S_OK;
