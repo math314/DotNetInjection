@@ -1,5 +1,6 @@
 #include "HakoniwaProfilerImpl.h"
 #include "Debugger.h"
+#include "ComUtil.h"
 
 #include <string>
 #include <wchar.h>
@@ -14,14 +15,7 @@ HakoniwaProfilerImpl::HakoniwaProfilerImpl() {
 }
 
 HakoniwaProfilerImpl::~HakoniwaProfilerImpl() {
-	if (mCorProfilerInfo != nullptr) {
-		mCorProfilerInfo->Release();
-		mCorProfilerInfo = nullptr;
-	}
-	if (mCorProfilerInfo2 != nullptr) {
-		mCorProfilerInfo2->Release();
-		mCorProfilerInfo2 = nullptr;
-	}
+	SafeRelease(&mCorProfilerInfo2);
 	DeleteCriticalSection(&mCriticalSection);
 }
 
@@ -33,7 +27,7 @@ HRESULT HakoniwaProfilerImpl::SetProfilerEventMask() {
 	eventMask |= COR_PRF_DISABLE_INLINING;
 	eventMask |= COR_PRF_DISABLE_OPTIMIZATIONS;
 
-	return mCorProfilerInfo->SetEventMask(eventMask);
+	return mCorProfilerInfo2->SetEventMask(eventMask);
 }
 
 
@@ -43,9 +37,8 @@ STDMETHODIMP HakoniwaProfilerImpl::QueryInterface(REFIID riid, void **ppObj) {
 
 	HRESULT hr = StringFromCLSID(riid, &clsid);
 	if (SUCCEEDED(hr)) {
-		std::wstring clsidString(clsid);
-		// g_debugLogger << "HakoniwaProfilerImpl::QueryInterface(" << ConvertStlString(clsidString).c_str() << ")" << std::endl;
-		::CoTaskMemFree(clsid);
+		Debugger::printf(L"QueryInterface(%s) called.", clsid);
+		CoTaskMemFree(clsid);
 	}
 	if (riid == IID_IUnknown) {
 		*ppObj = static_cast<IUnknown *>(static_cast<HakoniwaProfiler *>(this));
@@ -78,8 +71,8 @@ STDMETHODIMP HakoniwaProfilerImpl::QueryInterface(REFIID riid, void **ppObj) {
 	}
 
 	if (riid == IID_ICorProfilerInfo) {
-		*ppObj = mCorProfilerInfo;
-		mCorProfilerInfo->AddRef();
+		*ppObj = static_cast<ICorProfilerInfo *>(static_cast<ICorProfilerInfo2 *>(mCorProfilerInfo2));
+		mCorProfilerInfo2->AddRef();
 		return S_OK;
 	}
 
@@ -111,25 +104,12 @@ STDMETHODIMP HakoniwaProfilerImpl::InitializeForAttach(IUnknown *pCorProfilerInf
 STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 	Debugger::printf(L"HakoniwaProfilerImpl::Initialize()\n");
 
-	// get the ICorProfilerInfo interface
-	HRESULT hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo, (LPVOID*)&mCorProfilerInfo);
+	HRESULT hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (LPVOID*)&mCorProfilerInfo2);
 	if (FAILED(hr)) {
-		Debugger::printf(L"Error: Failed to get ICorProfilerInfo\n");
-		return E_FAIL;
-	} else {
-		Debugger::printf(L"Got ICorProfilerInfo\n");
-	}
-
-	hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (LPVOID*)&mCorProfilerInfo2);
-	if (FAILED(hr)) {
-		mCorProfilerInfo2 = nullptr;
 		Debugger::printf(L"Error: Failed to get ICorProfiler2\n");
 	} else {
 		Debugger::printf(L"Got ICorProfilerInfo2\n");
 	}
-
-	// Tell the profiler API which events we want to listen to
-	// Some events fail when we attach afterwards
 
 	hr = SetProfilerEventMask();
 	if (FAILED(hr)) {
@@ -140,7 +120,6 @@ STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 
 	Debugger::printf(L"Successfully initialized profiling\n");
 
-	// m_rewritehelper.SetCorProfilerInfo(mCorProfilerInfo);
 	return S_OK;
 }
 
@@ -165,20 +144,40 @@ STDMETHODIMP HakoniwaProfilerImpl::ClassUnloadStarted(ClassID classID) { return 
 STDMETHODIMP HakoniwaProfilerImpl::ClassUnloadFinished(ClassID classID, HRESULT hrStatus) { return S_OK; }
 STDMETHODIMP HakoniwaProfilerImpl::FunctionUnloadStarted(FunctionID functionID) { return S_OK; }
 
+const int MAX_LENGTH = 1024;
+
 STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, BOOL fIsSafeToBlock) {
 	EnterCriticalSection(&mCriticalSection);
+
+	//ClassID classID;
+	//ModuleID moduleID;
+	//mdToken token;
+	//mCorProfilerInfo2->GetFunctionInfo(functionID, &classID, &moduleID, &token);
+
+	//get function name
+	IMetaDataImport* metaDataImport = NULL;
+	mdToken functionToken = NULL;
+	mCorProfilerInfo2->GetTokenAndMetaDataFromFunction(functionID, IID_IMetaDataImport, (LPUNKNOWN *)&metaDataImport, &functionToken);
+
+	mdTypeDef classTypeDef;
+	WCHAR functionName[MAX_LENGTH];
+	WCHAR className[MAX_LENGTH];
+	PCCOR_SIGNATURE signatureBlob;
+	ULONG signatureBlobLength;
+	DWORD methodAttributes = 0;
+	metaDataImport->GetMethodProps(functionToken, &classTypeDef, functionName, MAX_LENGTH, 0, &methodAttributes, &signatureBlob, &signatureBlobLength, NULL, NULL);
+	metaDataImport->GetTypeDefProps(classTypeDef, className, MAX_LENGTH, 0, NULL, NULL);
+	SafeRelease(&metaDataImport);
+
+	//output function name
+	Debugger::printf(L"JIT Start : %s.%s (functionID = %p)", className, functionName, functionID);
 
 	LeaveCriticalSection(&mCriticalSection);
 	return S_OK;
 }
 
 STDMETHODIMP HakoniwaProfilerImpl::JITCompilationFinished(FunctionID functionID, HRESULT hrStatus, BOOL fIsSafeToBlock) {
-	//std::ostringstream o;
-	//o << "HakoniwaProfilerImpl::JITCompilationFinished(";
-	//o << functionID;
-	//o << ")" << std::endl << std::endl;
-	//std::string msg = o.str();
-	//g_debugLogger << msg.c_str();
+	Debugger::printf(L"JITCompilationFinished(funtionID = %p)",functionID);
 	return S_OK;
 }
 

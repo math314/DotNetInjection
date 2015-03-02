@@ -68,6 +68,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ComUtil.cpp" />
     <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="HakoniwaProfilerFactory.cpp" />
@@ -78,6 +79,7 @@
     <None Include="exports.def" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ComUtil.h" />
     <ClInclude Include="Debugger.h" />
     <ClInclude Include="HakoniwaProfilerFactory.h" />
     <ClInclude Include="HakoniwaProfilerImpl.h" />

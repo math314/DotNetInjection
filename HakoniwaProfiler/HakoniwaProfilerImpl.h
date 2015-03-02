@@ -98,7 +98,6 @@ public:
 
 	HRESULT SetProfilerEventMask();
 private:
-	ICorProfilerInfo* mCorProfilerInfo;
 	ICorProfilerInfo2* mCorProfilerInfo2;
 
 	long mRefCount;
