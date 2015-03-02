@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Injector", "Injector\Injector.csproj", "{A6D3F59D-2540-4FE8-BC5A-4C0B1D129C5D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HakoniwaProfier", "HakoniwaProfier\HakoniwaProfier.vcxproj", "{DE88D51B-FFC6-4BD0-A43C-71A3F4589536}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HakoniwaProfiler", "HakoniwaProfiler\HakoniwaProfiler.vcxproj", "{DE88D51B-FFC6-4BD0-A43C-71A3F4589536}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAppTest", "ConsoleAppTest\ConsoleAppTest.csproj", "{4D45AE16-4A4A-4733-BB16-B2C19D648439}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +51,20 @@ Global
 		{DE88D51B-FFC6-4BD0-A43C-71A3F4589536}.Release|Win32.ActiveCfg = Release|Win32
 		{DE88D51B-FFC6-4BD0-A43C-71A3F4589536}.Release|Win32.Build.0 = Release|Win32
 		{DE88D51B-FFC6-4BD0-A43C-71A3F4589536}.Release|x64.ActiveCfg = Release|Win32
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Release|ARM.ActiveCfg = Release|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Release|Win32.ActiveCfg = Release|Any CPU
+		{4D45AE16-4A4A-4733-BB16-B2C19D648439}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

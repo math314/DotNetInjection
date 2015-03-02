@@ -9,16 +9,10 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="idl">
-      <UniqueIdentifier>{c92acb87-0286-4004-85bd-a5870175ee47}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="idl\HakoniwaProfiler_i.c">
-      <Filter>idl</Filter>
     </ClCompile>
     <ClCompile Include="HakoniwaProfilerFactory.cpp">
       <Filter>ソース ファイル</Filter>
@@ -26,20 +20,18 @@
     <ClCompile Include="HakoniwaProfilerImpl.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="HakoniwaProfiler_i.c">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="idl\HakoniwaProfiler.idl">
-      <Filter>idl</Filter>
-    </Midl>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="idl\HakoniwaProfiler_h.h">
-      <Filter>idl</Filter>
-    </ClInclude>
     <ClInclude Include="HakoniwaProfilerFactory.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="HakoniwaProfilerImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="HakoniwaProfiler_h.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -47,5 +39,10 @@
     <None Include="exports.def">
       <Filter>ソース ファイル</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="HakoniwaProfiler.idl">
+      <Filter>ソース ファイル</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

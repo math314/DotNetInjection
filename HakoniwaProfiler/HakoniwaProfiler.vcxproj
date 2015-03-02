@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DE88D51B-FFC6-4BD0-A43C-71A3F4589536}</ProjectGuid>
-    <RootNamespace>HakoniwaProfier</RootNamespace>
+    <RootNamespace>HakoniwaProfiler</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -71,18 +71,18 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="HakoniwaProfilerFactory.cpp" />
     <ClCompile Include="HakoniwaProfilerImpl.cpp" />
-    <ClCompile Include="idl\HakoniwaProfiler_i.c" />
+    <ClCompile Include="HakoniwaProfiler_i.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="idl\HakoniwaProfiler.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="HakoniwaProfilerFactory.h" />
     <ClInclude Include="HakoniwaProfilerImpl.h" />
-    <ClInclude Include="idl\HakoniwaProfiler_h.h" />
+    <ClInclude Include="HakoniwaProfiler_h.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="HakoniwaProfiler.idl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

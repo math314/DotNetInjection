@@ -9,22 +9,17 @@ using System.Threading.Tasks;
 namespace Injector {
     class Program {
 
-        const string PROFILER_UUID = "{941EC77E-F7C0-42C8-84E1-15FEFA3CE96F}";
-        const string PROFILER_NAME = "ILRewriteProfiler.dll";
+        const string PROFILER_UUID = "{9992F2A6-DF35-472B-AD3E-317F85D958D7}";
+        const string PROFILER_NAME = "HakoniwaProfiler.dll";
 
         void StartTarget(string targetPath)
         {
             string current_dir = Directory.GetCurrentDirectory();
             string profiler_path = Path.Combine(current_dir, PROFILER_NAME);
-            string profiler_output_path = Path.Combine(current_dir, "target_output.txt");
-            string profiler_debug_path = Path.Combine(current_dir, "target_debug.txt");
 
             ProcessStartInfo psi = new ProcessStartInfo();
             psi.FileName = targetPath;
             psi.UseShellExecute = false;
-
-            psi.EnvironmentVariables.Add("ILREWRITE_PROFILER_OUTPUT", profiler_output_path);
-            psi.EnvironmentVariables.Add("ILREWRITE_PROFILER_DEBUG", profiler_debug_path);
 
             psi.EnvironmentVariables.Add("COR_ENABLE_PROFILING", "1");
             psi.EnvironmentVariables.Add("COR_PROFILER", PROFILER_UUID);

@@ -1,11 +1,9 @@
 #pragma once
 
-#include "idl\HakoniwaProfiler_h.h"
+#include "HakoniwaProfiler_h.h"
 
 #include <cor.h>
 #include <corprof.h>
-
-#include "idl\HakoniwaProfiler_h.h"
 
 class HakoniwaProfilerImpl :
 	public ICorProfilerCallback3,
