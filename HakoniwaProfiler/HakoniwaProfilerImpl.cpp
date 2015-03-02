@@ -137,7 +137,8 @@ STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 		fprintf(stderr,"SetEventMask()\n");
 	}
 
-	fprintf(stderr,"Successfully initialized profiling\n");
+	fprintf(stderr, "Successfully initialized profiling\n");
+	OutputDebugString(L"Successfully initialized profiling\n");
 
 	// m_rewritehelper.SetCorProfilerInfo(mCorProfilerInfo);
 	return S_OK;
