@@ -1,0 +1,27 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+object,
+uuid(DBFCC66B-281D-41C7-A2E0-355580315B43),
+oleautomation,
+]
+interface HakoniwaProfiler : IUnknown
+{
+
+};
+
+[
+uuid(F3AE991B-7D33-42D4-B5A0-15A96A8CEC34),
+version(1.0),
+]
+library HakoniwaProfilerLib
+{
+   importlib("stdole32.tlb");
+    [uuid(9992F2A6-DF35-472B-AD3E-317F85D958D7)]
+    coclass HakoniwaProfilerImpl
+    {
+        [default] interface HakoniwaProfiler;
+    };
+}
+
