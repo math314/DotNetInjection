@@ -175,35 +175,34 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 		Debugger::printf(L"JIT Start : %s.%s (functionID = %p)", className, functionName, functionID);
 	}
 	if (lstrcmp(L"System.Text.RegularExpressions.RegexReplacement", className) == 0 && lstrcmp(L"Replace", functionName) == 0) {
+		//get old method
 		LPCBYTE oldMethodBytes;
 		ULONG oldMethodSize;
 		hrCheck(mCorProfilerInfo2->GetILFunctionBody(moduleID, token, &oldMethodBytes, &oldMethodSize));
 
-		const COR_ILMETHOD_FAT* objPek = reinterpret_cast<const COR_ILMETHOD_FAT*>(oldMethodBytes);
-		Debugger::printf(L"IsFat : %d",objPek->IsFat());
+		const COR_ILMETHOD_FAT* oldHeader = reinterpret_cast<const COR_ILMETHOD_FAT*>(oldMethodBytes);
+		Debugger::printf(L"IsFat : %d", oldHeader->IsFat());
 
-		const int FAT_HEADER_SIZE = sizeof(WORD) + sizeof(WORD) + sizeof(DWORD) + sizeof(DWORD);
-
-		//allocate new method space
+		//allocate new method(=function) space
 		IMethodMalloc* methodMalloc = NULL;
 		hrCheck(mCorProfilerInfo2->GetILFunctionBodyAllocator(moduleID, &methodMalloc));
 		BYTE newMethod[] = {
 			0x04,// ldarg.2
 			0x2a // ret
 		};
-		ULONG newMethodSize = FAT_HEADER_SIZE + sizeof(newMethod);
-		void *result = methodMalloc->Alloc(newMethodSize);
+		ULONG newMethodSize = sizeof(COR_ILMETHOD_FAT) + sizeof(newMethod);
+		void *allocated = methodMalloc->Alloc(newMethodSize);
 		SafeRelease(&methodMalloc);
-		
-		WORD maxStackSize = 0;
-		WORD newSize = sizeof(newMethod);
-		//write new IL
-		memcpy((BYTE*)result, oldMethodBytes, FAT_HEADER_SIZE);
-		memcpy((BYTE*)result + sizeof(WORD), &maxStackSize, sizeof(WORD));
-		memcpy((BYTE*)result + sizeof(WORD) + sizeof(WORD), &newSize, sizeof(DWORD));
-		memcpy((BYTE*)result + FAT_HEADER_SIZE, newMethod, newMethodSize);
 
-		hrCheck(mCorProfilerInfo2->SetILFunctionBody(moduleID, token, reinterpret_cast<LPCBYTE>(result)));
+		//write new Header
+		COR_ILMETHOD_FAT* newHeader = (COR_ILMETHOD_FAT *)allocated;
+		memcpy(newHeader, oldHeader, sizeof(COR_ILMETHOD_FAT));
+		newHeader->SetCodeSize(sizeof(newMethod)); // change code size only
+		//write new IL
+		memcpy((BYTE*)allocated + sizeof(COR_ILMETHOD_FAT), newMethod, sizeof(newMethod));
+
+		//set new function
+		hrCheck(mCorProfilerInfo2->SetILFunctionBody(moduleID, token, (LPCBYTE)allocated));
 	}
 	LeaveCriticalSection(&mCriticalSection);
 	return S_OK;
