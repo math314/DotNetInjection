@@ -81,6 +81,7 @@
   <ItemGroup>
     <ClInclude Include="ComUtil.h" />
     <ClInclude Include="Debugger.h" />
+    <ClInclude Include="HakoniwaProfilerBase.h" />
     <ClInclude Include="HakoniwaProfilerFactory.h" />
     <ClInclude Include="HakoniwaProfilerImpl.h" />
     <ClInclude Include="HakoniwaProfiler_h.h" />

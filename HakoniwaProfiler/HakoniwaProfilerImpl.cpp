@@ -98,10 +98,6 @@ ULONG STDMETHODCALLTYPE HakoniwaProfilerImpl::Release() {
 	return nRefCount;
 }
 
-STDMETHODIMP HakoniwaProfilerImpl::ProfilerAttachComplete(void) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ProfilerDetachSucceeded(void) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::InitializeForAttach(IUnknown *pCorProfilerInfoUnk, void *pvClientData, UINT cbClientData) { return S_OK; }
-
 STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 	Debugger::printf(L"HakoniwaProfilerImpl::Initialize()\n");
 
@@ -123,27 +119,6 @@ STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 
 	return S_OK;
 }
-
-STDMETHODIMP HakoniwaProfilerImpl::ThreadAssignedToOSThread(ThreadID managedThreadID, DWORD osThreadID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::Shutdown() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::AppDomainCreationStarted(AppDomainID appDomainID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::AppDomainCreationFinished(AppDomainID appDomainID, HRESULT hrStatus) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::AppDomainShutdownStarted(AppDomainID appDomainID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::AppDomainShutdownFinished(AppDomainID appDomainID, HRESULT hrStatus) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::AssemblyLoadStarted(AssemblyID assemblyID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::AssemblyLoadFinished(AssemblyID assemblyID, HRESULT hrStatus) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::AssemblyUnloadStarted(AssemblyID assemblyID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::AssemblyUnloadFinished(AssemblyID assemblyID, HRESULT hrStatus) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ModuleLoadStarted(ModuleID moduleID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ModuleLoadFinished(ModuleID moduleID, HRESULT hrStatus) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ModuleUnloadStarted(ModuleID moduleID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ModuleUnloadFinished(ModuleID moduleID, HRESULT hrStatus) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ModuleAttachedToAssembly(ModuleID moduleID, AssemblyID assemblyID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ClassLoadStarted(ClassID classID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ClassLoadFinished(ClassID classID, HRESULT hrStatus) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ClassUnloadStarted(ClassID classID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ClassUnloadFinished(ClassID classID, HRESULT hrStatus) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::FunctionUnloadStarted(FunctionID functionID) { return S_OK; }
 
 const int MAX_LENGTH = 1024;
 
@@ -208,62 +183,3 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 	return S_OK;
 }
 
-STDMETHODIMP HakoniwaProfilerImpl::JITCompilationFinished(FunctionID functionID, HRESULT hrStatus, BOOL fIsSafeToBlock) {
-	// Debugger::printf(L"JITCompilationFinished(funtionID = %p)",functionID);
-	return S_OK;
-}
-
-STDMETHODIMP HakoniwaProfilerImpl::JITCachedFunctionSearchStarted(FunctionID functionID, BOOL *pbUseCachedFunction) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::JITCachedFunctionSearchFinished(FunctionID functionID, COR_PRF_JIT_CACHE result) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::JITFunctionPitched(FunctionID functionID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::JITInlining(FunctionID callerID, FunctionID calleeID, BOOL *pfShouldInline) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::UnmanagedToManagedTransition(FunctionID functionID, COR_PRF_TRANSITION_REASON reason) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ManagedToUnmanagedTransition(FunctionID functionID, COR_PRF_TRANSITION_REASON reason) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ThreadCreated(ThreadID threadID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ThreadDestroyed(ThreadID threadID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RemotingClientInvocationStarted() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RemotingClientSendingMessage(GUID *pCookie, BOOL fIsAsync) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RemotingClientReceivingReply(GUID *pCookie, BOOL fIsAsync) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RemotingClientInvocationFinished() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RemotingServerReceivingMessage(GUID *pCookie, BOOL fIsAsync) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RemotingServerInvocationStarted() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RemotingServerInvocationReturned() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RemotingServerSendingReply(GUID *pCookie, BOOL fIsAsync) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RuntimeSuspendStarted(COR_PRF_SUSPEND_REASON suspendReason) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RuntimeSuspendFinished() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RuntimeSuspendAborted() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RuntimeResumeStarted() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RuntimeResumeFinished() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RuntimeThreadSuspended(ThreadID threadID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RuntimeThreadResumed(ThreadID threadID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::MovedReferences(ULONG cmovedObjectIDRanges, ObjectID oldObjectIDRangeStart[], ObjectID newObjectIDRangeStart[], ULONG cObjectIDRangeLength[]) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ObjectAllocated(ObjectID objectID, ClassID classID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ObjectsAllocatedByClass(ULONG classCount, ClassID classIDs[], ULONG objects[]) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ObjectReferences(ObjectID objectID, ClassID classID, ULONG objectRefs, ObjectID objectRefIDs[]) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RootReferences(ULONG rootRefs, ObjectID rootRefIDs[]) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionThrown(ObjectID thrownObjectID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionUnwindFunctionEnter(FunctionID functionID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionUnwindFunctionLeave() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionSearchFunctionEnter(FunctionID functionID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionSearchFunctionLeave() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionSearchFilterEnter(FunctionID functionID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionSearchFilterLeave() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionSearchCatcherFound(FunctionID functionID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionCLRCatcherFound() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionCLRCatcherExecute() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionOSHandlerEnter(FunctionID functionID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionOSHandlerLeave(FunctionID functionID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionUnwindFinallyEnter(FunctionID functionID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionUnwindFinallyLeave() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionCatcherEnter(FunctionID functionID, ObjectID objectID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ExceptionCatcherLeave() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::COMClassicVTableCreated(ClassID wrappedClassID, REFGUID implementedIID, void *pVTable, ULONG cSlots) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::COMClassicVTableDestroyed(ClassID wrappedClassID, REFGUID implementedIID, void *pVTable) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::ThreadNameChanged(ThreadID threadID, ULONG cchName, WCHAR name[]) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::GarbageCollectionStarted(int cGenerations, BOOL generationCollected[], COR_PRF_GC_REASON reason) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::SurvivingReferences(ULONG cSurvivingObjectIDRanges, ObjectID objectIDRangeStart[], ULONG cObjectIDRangeLength[]) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::GarbageCollectionFinished() { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::FinalizeableObjectQueued(DWORD finalizerFlags, ObjectID objectID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::RootReferences2(ULONG cRootRefs, ObjectID rootRefIDs[], COR_PRF_GC_ROOT_KIND rootKinds[], COR_PRF_GC_ROOT_FLAGS rootFlags[], UINT_PTR rootIDs[]) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::HandleCreated(GCHandleID handleID, ObjectID initialObjectID) { return S_OK; }
-STDMETHODIMP HakoniwaProfilerImpl::HandleDestroyed(GCHandleID handleID) { return S_OK; }
