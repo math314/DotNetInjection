@@ -26,6 +26,7 @@ HRESULT HakoniwaProfilerImpl::SetProfilerEventMask() {
 	eventMask |= COR_PRF_MONITOR_JIT_COMPILATION;
 	eventMask |= COR_PRF_DISABLE_INLINING;
 	eventMask |= COR_PRF_DISABLE_OPTIMIZATIONS;
+	eventMask |= COR_PRF_USE_PROFILE_IMAGES;
 
 	return mCorProfilerInfo2->SetEventMask(eventMask);
 }
@@ -149,10 +150,10 @@ const int MAX_LENGTH = 1024;
 STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, BOOL fIsSafeToBlock) {
 	EnterCriticalSection(&mCriticalSection);
 
-	//ClassID classID;
-	//ModuleID moduleID;
-	//mdToken token;
-	//mCorProfilerInfo2->GetFunctionInfo(functionID, &classID, &moduleID, &token);
+	ClassID classID;
+	ModuleID moduleID;
+	mdToken token;
+	mCorProfilerInfo2->GetFunctionInfo(functionID, &classID, &moduleID, &token);
 
 	//get function name
 	IMetaDataImport* metaDataImport = NULL;
@@ -170,14 +171,46 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 	SafeRelease(&metaDataImport);
 
 	//output function name
-	Debugger::printf(L"JIT Start : %s.%s (functionID = %p)", className, functionName, functionID);
+	if (lstrcmp(L"Replace", functionName) == 0) {
+		Debugger::printf(L"JIT Start : %s.%s (functionID = %p)", className, functionName, functionID);
+	}
+	if (lstrcmp(L"System.Text.RegularExpressions.RegexReplacement", className) == 0 && lstrcmp(L"Replace", functionName) == 0) {
+		LPCBYTE oldMethodBytes;
+		ULONG oldMethodSize;
+		hrCheck(mCorProfilerInfo2->GetILFunctionBody(moduleID, token, &oldMethodBytes, &oldMethodSize));
 
+		const COR_ILMETHOD_FAT* objPek = reinterpret_cast<const COR_ILMETHOD_FAT*>(oldMethodBytes);
+		Debugger::printf(L"IsFat : %d",objPek->IsFat());
+
+		const int FAT_HEADER_SIZE = sizeof(WORD) + sizeof(WORD) + sizeof(DWORD) + sizeof(DWORD);
+
+		//allocate new method space
+		IMethodMalloc* methodMalloc = NULL;
+		hrCheck(mCorProfilerInfo2->GetILFunctionBodyAllocator(moduleID, &methodMalloc));
+		BYTE newMethod[] = {
+			0x04,// ldarg.2
+			0x2a // ret
+		};
+		ULONG newMethodSize = FAT_HEADER_SIZE + sizeof(newMethod);
+		void *result = methodMalloc->Alloc(newMethodSize);
+		SafeRelease(&methodMalloc);
+		
+		WORD maxStackSize = 0;
+		WORD newSize = sizeof(newMethod);
+		//write new IL
+		memcpy((BYTE*)result, oldMethodBytes, FAT_HEADER_SIZE);
+		memcpy((BYTE*)result + sizeof(WORD), &maxStackSize, sizeof(WORD));
+		memcpy((BYTE*)result + sizeof(WORD) + sizeof(WORD), &newSize, sizeof(DWORD));
+		memcpy((BYTE*)result + FAT_HEADER_SIZE, newMethod, newMethodSize);
+
+		hrCheck(mCorProfilerInfo2->SetILFunctionBody(moduleID, token, reinterpret_cast<LPCBYTE>(result)));
+	}
 	LeaveCriticalSection(&mCriticalSection);
 	return S_OK;
 }
 
 STDMETHODIMP HakoniwaProfilerImpl::JITCompilationFinished(FunctionID functionID, HRESULT hrStatus, BOOL fIsSafeToBlock) {
-	Debugger::printf(L"JITCompilationFinished(funtionID = %p)",functionID);
+	// Debugger::printf(L"JITCompilationFinished(funtionID = %p)",functionID);
 	return S_OK;
 }
 

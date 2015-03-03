@@ -42,7 +42,12 @@
   * アウトプロセスサーバでプロファイラを作成すれば，ここで苦労することはないが…
     * 実はアウトプロセスサーバ+.netの場合，プロファイラのプラットフォームターゲットをAnyCPUにしてはいけない模様
     * ハングアップするらしい
-  * 参考 : http://qiita.com/mima_ita/items/57d7c1101543e214b1d6
+  * 参考[7]
+
+* mCorProfilerInfo2->SetEventMask で COR_PRF_USE_PROFILE_IMAGES を指定する必要がある
+  * System.*** は NGENでJITコンパイル済みなので，普通はJITCompilationStartedが呼び出される事はない
+    そこでJITコンパイルを無効化したprofile用のdllを読み込む様にEventMaskで設定する必要がある
+  * 参考[4]
 
 参考にした記事達
 ==================
@@ -70,3 +75,6 @@ NGENで既にコンパイルされているILもflagを設定することで再�
 
 * http://www.codeproject.com/Articles/37549/CLR-Injection-Runtime-Method-Replacer[6]
 [5]と同様
+
+* http://qiita.com/mima_ita/items/57d7c1101543e214b1d6[7]
+.netアプリケーションと，COMのインプロセスサーバとアウトプロセスサーバの関係
