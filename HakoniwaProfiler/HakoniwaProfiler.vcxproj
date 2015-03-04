@@ -71,6 +71,7 @@
     <ClCompile Include="ComUtil.cpp" />
     <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="FunctionInfo.cpp" />
     <ClCompile Include="HakoniwaProfilerFactory.cpp" />
     <ClCompile Include="HakoniwaProfilerImpl.cpp" />
     <ClCompile Include="HakoniwaProfiler_i.c" />
@@ -81,6 +82,7 @@
   <ItemGroup>
     <ClInclude Include="ComUtil.h" />
     <ClInclude Include="Debugger.h" />
+    <ClInclude Include="FunctionInfo.h" />
     <ClInclude Include="HakoniwaProfilerBase.h" />
     <ClInclude Include="HakoniwaProfilerFactory.h" />
     <ClInclude Include="HakoniwaProfilerImpl.h" />

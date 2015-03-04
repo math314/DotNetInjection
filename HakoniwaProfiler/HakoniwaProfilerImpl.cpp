@@ -1,6 +1,7 @@
 #include "HakoniwaProfilerImpl.h"
 #include "Debugger.h"
 #include "ComUtil.h"
+#include "FunctionInfo.h"
 
 #include <string>
 #include <wchar.h>
@@ -11,12 +12,10 @@
 
 HakoniwaProfilerImpl::HakoniwaProfilerImpl() {
 	mRefCount = 1;
-	InitializeCriticalSection(&mCriticalSection);
 }
 
 HakoniwaProfilerImpl::~HakoniwaProfilerImpl() {
 	SafeRelease(&mCorProfilerInfo2);
-	DeleteCriticalSection(&mCriticalSection);
 }
 
 HRESULT HakoniwaProfilerImpl::SetProfilerEventMask() {
@@ -122,45 +121,29 @@ STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 
 const int MAX_LENGTH = 1024;
 
+#include <memory>
+
+void ReplaceTest(std::unique_ptr<FunctionInfo>& fi, const wchar_t* assemblyName, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName){
+
+}
+
 STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, BOOL fIsSafeToBlock) {
-	EnterCriticalSection(&mCriticalSection);
+	std::unique_ptr<FunctionInfo> fi(FunctionInfo::CreateFunctionInfo(mCorProfilerInfo2, functionID));
 
-	ClassID classID;
-	ModuleID moduleID;
-	mdToken token;
-	mCorProfilerInfo2->GetFunctionInfo(functionID, &classID, &moduleID, &token);
+	//output function information
+	Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 
-	//get function name
-	IMetaDataImport* metaDataImport = NULL;
-	mdToken functionToken = NULL;
-	mCorProfilerInfo2->GetTokenAndMetaDataFromFunction(functionID, IID_IMetaDataImport, (LPUNKNOWN *)&metaDataImport, &functionToken);
-
-	mdTypeDef classTypeDef;
-	WCHAR functionName[MAX_LENGTH];
-	WCHAR className[MAX_LENGTH];
-	PCCOR_SIGNATURE signatureBlob;
-	ULONG signatureBlobLength;
-	DWORD methodAttributes = 0;
-	metaDataImport->GetMethodProps(functionToken, &classTypeDef, functionName, MAX_LENGTH, 0, &methodAttributes, &signatureBlob, &signatureBlobLength, NULL, NULL);
-	metaDataImport->GetTypeDefProps(classTypeDef, className, MAX_LENGTH, 0, NULL, NULL);
-	SafeRelease(&metaDataImport);
-
-	//output function name
-	if (lstrcmp(L"Replace", functionName) == 0) {
-		Debugger::printf(L"JIT Start : %s.%s (functionID = %p)", className, functionName, functionID);
-	}
-	if (lstrcmp(L"System.Text.RegularExpressions.RegexReplacement", className) == 0 && lstrcmp(L"Replace", functionName) == 0) {
+	if (fi->get_ClassName() == L"System.Text.RegularExpressions.RegexReplacement" && fi->get_FunctionName() == L"Replace") {
 		//get old method
 		LPCBYTE oldMethodBytes;
 		ULONG oldMethodSize;
-		hrCheck(mCorProfilerInfo2->GetILFunctionBody(moduleID, token, &oldMethodBytes, &oldMethodSize));
+		hrCheck(mCorProfilerInfo2->GetILFunctionBody(fi->get_ModuleID(), fi->get_Token(), &oldMethodBytes, &oldMethodSize));
 
 		const COR_ILMETHOD_FAT* oldHeader = reinterpret_cast<const COR_ILMETHOD_FAT*>(oldMethodBytes);
-		Debugger::printf(L"IsFat : %d", oldHeader->IsFat());
 
 		//allocate new method(=function) space
 		IMethodMalloc* methodMalloc = NULL;
-		hrCheck(mCorProfilerInfo2->GetILFunctionBodyAllocator(moduleID, &methodMalloc));
+		hrCheck(mCorProfilerInfo2->GetILFunctionBodyAllocator(fi->get_ModuleID(), &methodMalloc));
 		BYTE newMethod[] = {
 			0x04,// ldarg.2
 			0x2a // ret
@@ -177,9 +160,8 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 		memcpy((BYTE*)allocated + sizeof(COR_ILMETHOD_FAT), newMethod, sizeof(newMethod));
 
 		//set new function
-		hrCheck(mCorProfilerInfo2->SetILFunctionBody(moduleID, token, (LPCBYTE)allocated));
+		hrCheck(mCorProfilerInfo2->SetILFunctionBody(fi->get_ModuleID(), fi->get_Token(), (LPCBYTE)allocated));
 	}
-	LeaveCriticalSection(&mCriticalSection);
 	return S_OK;
 }
 

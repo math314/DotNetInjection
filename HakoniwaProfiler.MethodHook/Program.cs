@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ConsoleAppTest {
+namespace HakoniwaProfiler.MethodHook {
     class Program {
 
         internal static string Replace(MatchEvaluator evaluator, Regex regex, string input, int count, int startat) {
@@ -73,14 +73,31 @@ namespace ConsoleAppTest {
             return stringBuilder.ToString();
         }
 
-        static void hoge() {
-            Console.WriteLine(DateTime.Now);
+        static void hoge(int a, double b, string c) {
+            int x = 1, y = 2;
+            RefTest(ref x, out y);
+        }
+
+        static void RefTest(ref int a,out int b){
+            a = 1;
+            b = 2;
         }
 
         static void Main(string[] args) {
-            hoge();
-            string fuga = Console.ReadLine();
-            Console.WriteLine(fuga);
+
+            hoge(1, 3.0, "aaa");
+
+            System.Collections.ArrayList list = new System.Collections.ArrayList();
+            var x = 1;
+            var y = 2;
+            list.Add(x);
+            list.Add(y);
+            list.Add("asdf");
+
+            object[] a = new object[10];
+            a[0] = x;
+            a[1] = y;
+            a[2] = "asdf";
         }
     }
 }

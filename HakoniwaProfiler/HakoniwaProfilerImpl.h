@@ -24,5 +24,4 @@ private:
 	ICorProfilerInfo2* mCorProfilerInfo2;
 
 	long mRefCount;
-	CRITICAL_SECTION mCriticalSection;
 };
