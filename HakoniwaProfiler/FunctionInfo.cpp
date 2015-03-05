@@ -46,7 +46,10 @@ FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, F
 	signatureBlob = ParseSignature(metaDataImport, signatureBlob, returnType);
 
 	WCHAR signatureText[MAX_LENGTH] = L"";
-	wsprintf(signatureText, L"%d|%s|%s|%d|%s|%d", functionID, className, functionName, (methodAttributes & mdStatic) != 0, returnType, argumentCount);
+	wsprintf(signatureText, L"fid=%08X|%s %s %s::%s|arg = %d",
+		functionID,
+		(methodAttributes & mdStatic) != 0 ? L"(nonstatic)" : L"static", returnType, className, functionName,
+		argumentCount);
 
 	for (ULONG i = 0; (signatureBlob != NULL) && (i < argumentCount); ++i) {
 		WCHAR parameters[MAX_LENGTH];
@@ -54,7 +57,7 @@ FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, F
 		signatureBlob = ParseSignature(metaDataImport, signatureBlob, parameters);
 
 		if (signatureBlob != NULL) {
-			wcscat(signatureText, L"|");
+			wcscat(signatureText, L",");
 			wcscat(signatureText, parameters);
 		}
 	}

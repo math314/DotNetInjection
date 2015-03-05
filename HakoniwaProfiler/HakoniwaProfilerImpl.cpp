@@ -115,16 +115,6 @@ const int MAX_LENGTH = 1024;
 STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, BOOL fIsSafeToBlock) {
 	std::shared_ptr<FunctionInfo> fi(FunctionInfo::CreateFunctionInfo(mCorProfilerInfo2.Get(), functionID));
 
-	//output function information
-	// Debugger::printf(L"%s", fi->get_SignatureText().c_str());
-
-	//if (fi->get_ClassName() == L"System.Text.RegularExpressions.RegexReplacement" && fi->get_FunctionName() == L"Replace"
-	//	&& (IsMdStatic(fi->get_MethodAttributes()) != 0)
-	//	){
-	//	Debugger::printf(L"%s", fi->get_SignatureText().c_str());
-	//	ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace");
-	//}
-
 	if (fi->get_ClassName() == L"System.DateTime" && fi->get_FunctionName() == L"get_Now") {
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
@@ -135,6 +125,18 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"getStr1");
+	}
+
+	if (fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"haveArguments") {
+		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		Tranpoline tranpoline(mCorProfilerInfo2, fi);
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"haveArguments");
+	}
+
+	if(fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"haveManyArguments") {
+		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		Tranpoline tranpoline(mCorProfilerInfo2, fi);
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"haveManyArguments");
 	}
 
 	return S_OK;

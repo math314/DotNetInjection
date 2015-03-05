@@ -15,8 +15,26 @@ namespace HakoniwaProfiler.MethodHook {
 
         static public DateTime get_Now()
         {
-            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacementget_Now");
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacement.get_Now");
             return new DateTime(2000,1,1);
+        }
+
+        static public string haveArguments(string arg1, string arg2)
+        {
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacement.haveArguments");
+            return string.Format("{0} + {1}", arg1, arg2);
+        }
+
+        static public string haveManyArguments(string arg1, string arg2, string arg3, double arg4, int arg5, int arg6)
+        {
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacement.haveManyArguments");
+            return string.Format("{0} + {1} + {2} + {3} + {4} + {5}", arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+        
+        static int intarg2(int x, int b)
+        {
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacement.intarg2");
+            return x + b;
         }
 
         static string a(MatchEvaluator evaluator, Regex regex, string input, int count, int startat)

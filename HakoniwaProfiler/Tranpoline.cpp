@@ -8,6 +8,14 @@
 
 using Microsoft::WRL::ComPtr;
 
+static void dump(const void* p, int size) {
+	WCHAR b[2000];
+	for (int i = 0; i < size; i++) {
+		wsprintf(b + 3 * i, L"%02X,", ((const BYTE*)p)[i]);
+	}
+	Debugger::printf(L"size = %d,body = %s", size, b);
+}
+
 mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::vector<BYTE>& publicToken, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName) {
 	//query interface
 	ComPtr<IMetaDataEmit> metaDataEmit;
@@ -29,7 +37,6 @@ mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::
 	hrCheck(metaDataEmit->DefineTypeRefByName(assemblyRef, fullyQualifiedClassName, &typeRef));
 
 	std::vector<BYTE> defineSignatureBlob = fi->get_SignatureBlob();
-	Debugger::printf(L"buffer size = %d", defineSignatureBlob.size());
 	defineSignatureBlob[0] = IMAGE_CEE_CS_CALLCONV_DEFAULT;
 
 	if (IsMdStatic(fi->get_MethodAttributes()) == 0) {
@@ -45,7 +52,7 @@ mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::
 	return memberRef;
 }
 
-BYTE Tranpoline::calcNewMethodStackSize() {
+BYTE Tranpoline::calcNewMethodArgCount() {
 	ULONG newArguments = fi->getArgumentCount();
 	if (!IsMdStatic(fi->get_MethodAttributes())) {
 		newArguments++; //push caller object
@@ -61,7 +68,7 @@ BYTE Tranpoline::calcNewMethodStackSize() {
 
 std::vector<BYTE> Tranpoline::ConstructTranpolineMethodIL(mdMemberRef mdCallFunctionRef) {
 	std::vector<BYTE> newILs;
-	ULONG newArguments = calcNewMethodStackSize();
+	ULONG newArguments = calcNewMethodArgCount();
 
 	// ldarg.0, ldarg.1 ... ldarg. newArguments - 1
 	for (BYTE i = 0; i < (BYTE)newArguments; i++) {
@@ -95,11 +102,12 @@ COR_ILMETHOD_FAT Tranpoline::ConstructTranpolineMethodBody(DWORD codeSize) {
 		Debugger::printf(L"not fat");
 		exit(-1);
 	}
-	// dump(oldHeader, size);
+	dump(oldHeader, size);
 
 	COR_ILMETHOD_FAT fatHeader;
 	memcpy(&fatHeader, oldHeader, sizeof(COR_ILMETHOD));
 	fatHeader.SetCodeSize(codeSize);
+	fatHeader.SetMaxStack(calcNewMethodArgCount() + 1); // (arguments + function return val) size
 
 	return fatHeader;
 }

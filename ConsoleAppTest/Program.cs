@@ -30,9 +30,32 @@ namespace ConsoleAppTest {
             // return get_Now_dummy();
         }
 
+        static string haveArguments(string arg1, string arg2)
+        {
+            return string.Format("{0} + {1}", arg1, arg2);
+        }
+
+        static string haveManyArguments(string arg1, string arg2, string arg3, double arg4, int arg5, int arg6)
+        {
+            return string.Format("{0} + {1} + {2} + {3} + {4} + {5}", arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+
+        static string haveManyArguments_(string arg1, string arg2, string arg3, double arg4, int arg5, int arg6)
+        {
+            return haveManyArguments(arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+
+        static int intarg2(int x,int b)
+        {
+            return x + b;
+        }
+
         static void hoge() {
             Console.WriteLine(fff());
             Console.WriteLine(getDate());
+            Console.WriteLine(haveArguments("aa", "bb"));
+            Console.WriteLine(intarg2(1,2));
+            Console.WriteLine(haveManyArguments_("a", "b", "c", 2.0, 3, 4));
             string a = Regex.Replace("poyohugapoyopiyo", "poyo", "xxxx");
             Console.WriteLine(a);
         }

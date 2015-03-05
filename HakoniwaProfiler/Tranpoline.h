@@ -20,7 +20,7 @@ public:
 	void Update(const wchar_t* className, const wchar_t* methodName);
 
 	mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::vector<BYTE>& publicToken, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName);
-	BYTE calcNewMethodStackSize();
+	BYTE calcNewMethodArgCount();
 	void* AllocateFuctionBody(DWORD size);
 	std::vector<BYTE> ConstructTranpolineMethodIL(mdMemberRef mdCallFunctionRef);
 	COR_ILMETHOD_FAT ConstructTranpolineMethodBody(DWORD codeSize);
