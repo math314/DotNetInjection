@@ -124,16 +124,15 @@ const int MAX_LENGTH = 1024;
 #include <memory>
 
 mdMemberRef DefineInjectionMethod(ICorProfilerInfo2* info, FunctionInfo* fi, const wchar_t* assemblyName, std::vector<BYTE>& publicToken, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName) {
+	//query interface
 	IMetaDataEmit* metaDataEmit = NULL;
 	hrCheck(info->GetModuleMetaData(fi->get_ModuleID(), ofRead | ofWrite, IID_IMetaDataEmit, (IUnknown**)&metaDataEmit));
-
-	ASSEMBLYMETADATA assemblyMetaData = { 0 };
-	assemblyMetaData.usMajorVersion = 1; //assembly version is 1.0.0.0
-
 	IMetaDataAssemblyEmit* metaDataAssemblyEmit = NULL;
 	hrCheck(metaDataEmit->QueryInterface(IID_IMetaDataAssemblyEmit, (void**)&metaDataAssemblyEmit));
 
 	mdAssemblyRef assemblyRef = mdAssemblyRefNil;
+	ASSEMBLYMETADATA assemblyMetaData = { 0 };
+	assemblyMetaData.usMajorVersion = 1; //assembly version is 1.0.0.0
 	hrCheck(metaDataAssemblyEmit->DefineAssemblyRef(&(publicToken[0]), publicToken.size(), assemblyName, &assemblyMetaData, NULL, 0, 0, &assemblyRef));
 
 	mdTypeRef typeRef = mdTypeRefNil;
@@ -159,6 +158,43 @@ mdMemberRef DefineInjectionMethod(ICorProfilerInfo2* info, FunctionInfo* fi, con
 	return memberRef;
 }
 
+std::vector<BYTE> ConstructTranpolineMethodIL(ICorProfilerInfo2* info, FunctionInfo* fi,mdMemberRef mdCallFunctionRef) {
+	std::vector<BYTE> newILs;
+	ULONG newArguments = fi->getArgumentCount();
+	
+	if (!IsMdStatic(fi->get_MethodAttributes())) {
+		//push caller object
+		newArguments++;
+	}
+	
+	if (newArguments > 0xFF) {
+		Debugger::printf(L"arguments too many");
+		exit(-1);
+	}
+
+	// ldarg.0, ldarg.1 ... ldarg. newArguments - 1
+	for (BYTE i = 0; i < (BYTE)newArguments; i++) {
+		if (i < 4) {
+			newILs.push_back(0x02 + i); //ldarg.0 ~ ldarg.3
+		} else {
+			newILs.push_back(0x0E);
+			newILs.push_back(i); //ldarg.s <index>
+		}
+	}
+
+	// method call
+	newILs.push_back(0x28);
+	newILs.push_back((mdCallFunctionRef >> 0) & 0xFF);
+	newILs.push_back((mdCallFunctionRef >> 8) & 0xFF);
+	newILs.push_back((mdCallFunctionRef >> 16) & 0xFF);
+	newILs.push_back((mdCallFunctionRef >> 24) & 0xFF);
+
+	// ret
+	newILs.push_back(0x2a);
+
+	return newILs;
+}
+
 void ReplaceTest(ICorProfilerInfo2* info, FunctionInfo* fi, const wchar_t* className, const wchar_t* methodName) {
 	const WCHAR moduleName[] = L"HakoniwaProfiler.MethodHook";
 	const BYTE publicToken[] = { 0x41, 0x91, 0x82, 0x76, 0xff, 0x21, 0x51, 0x80 };
@@ -175,36 +211,21 @@ void ReplaceTest(ICorProfilerInfo2* info, FunctionInfo* fi, const wchar_t* class
 		exit(-1);
 	}
 
-	// (à¯êîå≈íË)
-	//allocate new method(=function) space
+	std::vector<BYTE> newILs = ConstructTranpolineMethodIL(info, fi, newMemberRef);
+
+	ULONG newMethodSize = sizeof(COR_ILMETHOD_FAT) + newILs.size();
+
 	IMethodMalloc* methodMalloc = NULL;
 	hrCheck(info->GetILFunctionBodyAllocator(fi->get_ModuleID(), &methodMalloc));
-	BYTE newMethod[] = {
-		//0x02, // ldarg.0
-		//0x03, // ldarg.1
-		//0x04, // ldarg.2
-		//0x05, // ldarg.3
-		// 0x0E, 0x04, // ldarg.s 4
-		// 0x14, // ldnull
-		0x28, (newMemberRef >> 0) & 0xFF, (newMemberRef >> 8) & 0xFF, (newMemberRef >> 16) & 0xFF, (newMemberRef >> 24) & 0xFF, // call <hoge>
-		0x2a // ret
-	};
-
-	//BYTE newMethod[] = {
-	//	0x04,// ldarg.2
-	//	0x2a // ret
-	//};
-
-	ULONG newMethodSize = sizeof(COR_ILMETHOD_FAT)+sizeof(newMethod);
 	void *allocated = methodMalloc->Alloc(newMethodSize);
 	SafeRelease(&methodMalloc);
 
 	//write new Header
 	COR_ILMETHOD_FAT* newHeader = (COR_ILMETHOD_FAT *)allocated;
 	memcpy(newHeader, oldHeader, sizeof(COR_ILMETHOD_FAT));
-	newHeader->SetCodeSize(sizeof(newMethod)); // change code size only
+	newHeader->SetCodeSize(newILs.size()); // change code size only
 	//write new IL
-	memcpy((BYTE*)allocated + sizeof(COR_ILMETHOD_FAT), newMethod, sizeof(newMethod));
+	memcpy((BYTE*)allocated + sizeof(COR_ILMETHOD_FAT), &newILs[0], newILs.size());
 
 	//set new function
 	hrCheck(info->SetILFunctionBody(fi->get_ModuleID(), fi->get_Token(), (LPCBYTE)allocated));
@@ -224,10 +245,6 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 	//	ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace");
 	//}
 
-	if (fi->get_ClassName() == L"System.DateTime") {
-		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
-	}
-
 	if (fi->get_ClassName() == L"System.DateTime" && fi->get_FunctionName() == L"get_Now") {
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"get_Now");
@@ -237,11 +254,6 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"getStr1");
 	}
-
-	//if (fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"getDate") {
-	//	Debugger::printf(L"%s", fi->get_SignatureText().c_str());
-	//	ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"get_Now");
-	//}
 
 	delete fi;
 

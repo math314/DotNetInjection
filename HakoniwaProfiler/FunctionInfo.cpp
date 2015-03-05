@@ -71,10 +71,7 @@ FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, F
 	result->mSignatureText = signatureText;
 	result->mSignatureBlob = std::vector<BYTE>(signatureBlobOrigin, signatureBlob);
 	result->mMethodAttributes = methodAttributes;
-
-	//if (signatureBlob - signatureBlobOrigin != signatureBlobLength) {
-	//	Debugger::printf(L"signatureBlobLength is invalied?");
-	//}
+	result->mArgumentCount = argumentCount;
 
 	return result;
 }

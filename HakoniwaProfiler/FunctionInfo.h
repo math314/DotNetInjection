@@ -20,7 +20,8 @@ public:
 	const std::wstring& get_AssemblyName() const { return mAssemblyName; }
 	const std::wstring& get_SignatureText() const { return mSignatureText; }
 	const std::vector<BYTE>& get_SignatureBlob() const { return mSignatureBlob; }
-	const DWORD get_MethodAttributes() const { return mMethodAttributes; }
+	DWORD get_MethodAttributes() const { return mMethodAttributes; }
+	ULONG getArgumentCount() const { return mArgumentCount; }
 
 	static PCCOR_SIGNATURE ParseSignature(IMetaDataImport *pMDImport, PCCOR_SIGNATURE signature, WCHAR* szBuffer);
 
@@ -38,4 +39,5 @@ private:
 
 	DWORD mMethodAttributes;
 	std::vector<BYTE> mSignatureBlob;
+	ULONG mArgumentCount;
 };

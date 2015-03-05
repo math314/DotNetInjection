@@ -33,13 +33,12 @@
   * 試してない
 
 * 対象アプリケーションのプラットフォームターゲットがx86じゃないと動かない
-  * はまった
   * 何故ならHakoniwaProfiler.dllがx86なので
-  * x64にも対応したいなら，それ用のdllを作る必要があるか
+  * x64にも対応したいなら，それ用のdllを作る必要がある
   * デフォルトでは"AnyCPU" だが，これでは64bitのOSで32bitアプリケーションとして実行は"出来ない"
-    * 余談だが，.net4.5以降では "AnyCPU + 32bit優先" というオプションを付けることで，32bitでも動くようになったり
-  * CorFlags.exe というコマンドで，"AnyCPU"を"x86"に変更できる(exeを直接書き換える様子)．
-  * アウトプロセスサーバでプロファイラを作成すれば，ここで苦労することはないが…
+    * 余談だが，.net4.5以降では "AnyCPU + 32bit優先" というオプションを付けることで，32bitでも動くようになる
+  * CorFlags.exe というコマンドで，"AnyCPU"を"x86"に変更できる(exeを直接書き換える)．
+  * アウトプロセスサーバでプロファイラを作成すれば苦労が少ない？
     * 実はアウトプロセスサーバ+.netの場合，プロファイラのプラットフォームターゲットをAnyCPUにしてはいけない模様
     * ハングアップするらしい
   * 参考[7]
@@ -58,6 +57,7 @@
     * mscorlibのassemblyにはSystem.Security.SecurityTransparent属性が宣言されている
     * これが宣言されたアセンブリからは，SecurityTransparent，SecuritySafeCriticalな関数しか呼べない
     * デフォルトではSystem.Security.AllowPartiallyTrustedCallersが暗に宣言されているが，これではダメらしい
+  * 参考[8]
 
 参考にした記事達
 ==================
@@ -88,3 +88,6 @@ NGENで既にコンパイルされているILもflagを設定することで再�
 
 * http://qiita.com/mima_ita/items/57d7c1101543e214b1d6[7]
 .netアプリケーションと，COMのインプロセスサーバとアウトプロセスサーバの関係
+
+* http://www.atmarkit.co.jp/fdotnet/special/dotnet4security_01/dotnet4security_01_01.html[8]
+.NET 4のセキュリティ透過性モデル（レベル2）について
