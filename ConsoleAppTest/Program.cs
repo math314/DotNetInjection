@@ -13,6 +13,12 @@ namespace ConsoleAppTest {
             return "getStr1";
         }
 
+        static DateTime getDate()
+        {
+            Console.WriteLine("ConsoleAppTest.Program.getDate");
+            return DateTime.Now;
+        }
+
         static string getStr2()
         {
             return "getStr2";
@@ -24,14 +30,9 @@ namespace ConsoleAppTest {
             // return get_Now_dummy();
         }
 
-        static string sa()
-        {
-            return HakoniwaProfiler.MethodHook.RegexReplacement.getStr1();
-        }
-
         static void hoge() {
-            Console.WriteLine(DateTime.Now);
             Console.WriteLine(fff());
+            Console.WriteLine(getDate());
             string a = Regex.Replace("poyohugapoyopiyo", "poyo", "xxxx");
             Console.WriteLine(a);
         }

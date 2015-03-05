@@ -50,9 +50,14 @@
   * 参考[4]
 
 * System.MethodAccessExceptionが発生する
-  * .net4.0から導入されたセキュリティモデルにより発生する例外？
-  * そうではなく，publicでない関数をcallしようとしたことにより発生した例外だった
-  * .netのエンジンは，正しく関数にアクセス出来るかどうかを確認している
+  * 今回発生した理由は2つ
+  * publicでない関数をcallしようとしたことにより発生した例外
+    * あるクラスから，別クラスのprivateな関数の呼び出しをするように書き換えていた
+    * publicな関数を呼び出すコードに書き変える事で対処
+  * .net4.0から導入されたセキュリティモデルにより発生する例外
+    * mscorlibのassemblyにはSystem.Security.SecurityTransparent属性が宣言されている
+    * これが宣言されたアセンブリからは，SecurityTransparent，SecuritySafeCriticalな関数しか呼べない
+    * デフォルトではSystem.Security.AllowPartiallyTrustedCallersが暗に宣言されているが，これではダメらしい
 
 参考にした記事達
 ==================

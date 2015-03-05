@@ -180,11 +180,11 @@ void ReplaceTest(ICorProfilerInfo2* info, FunctionInfo* fi, const wchar_t* class
 	IMethodMalloc* methodMalloc = NULL;
 	hrCheck(info->GetILFunctionBodyAllocator(fi->get_ModuleID(), &methodMalloc));
 	BYTE newMethod[] = {
-		0x02, // ldarg.0
-		0x03, // ldarg.1
-		0x04, // ldarg.2
-		0x05, // ldarg.3
-		 0x0E, 0x04, // ldarg.s 4
+		//0x02, // ldarg.0
+		//0x03, // ldarg.1
+		//0x04, // ldarg.2
+		//0x05, // ldarg.3
+		// 0x0E, 0x04, // ldarg.s 4
 		// 0x14, // ldnull
 		0x28, (newMemberRef >> 0) & 0xFF, (newMemberRef >> 8) & 0xFF, (newMemberRef >> 16) & 0xFF, (newMemberRef >> 24) & 0xFF, // call <hoge>
 		0x2a // ret
@@ -224,10 +224,24 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 	//	ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace");
 	//}
 
+	if (fi->get_ClassName() == L"System.DateTime") {
+		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+	}
+
+	if (fi->get_ClassName() == L"System.DateTime" && fi->get_FunctionName() == L"get_Now") {
+		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"get_Now");
+	}
+
 	if (fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"getStr1") {
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"getStr1");
 	}
+
+	//if (fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"getDate") {
+	//	Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+	//	ReplaceTest(mCorProfilerInfo2, fi, L"HakoniwaProfiler.MethodHook.RegexReplacement", L"get_Now");
+	//}
 
 	delete fi;
 

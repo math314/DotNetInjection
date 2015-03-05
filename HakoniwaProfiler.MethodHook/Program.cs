@@ -9,14 +9,14 @@ namespace HakoniwaProfiler.MethodHook {
 
         static public string getStr1()
         {
-            Console.WriteLine("HakoniwaProfiler.MethodHook.RegexReplacement.getStr1");
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacement.getStr1");
             return "HHHH";
         }
 
         static public DateTime get_Now()
         {
-            Console.WriteLine("HakoniwaProfiler.MethodHook");
-            return new DateTime();
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacementget_Now");
+            return new DateTime(2000,1,1);
         }
 
         static string a(MatchEvaluator evaluator, Regex regex, string input, int count, int startat)
