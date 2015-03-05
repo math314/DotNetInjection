@@ -75,6 +75,7 @@
     <ClCompile Include="HakoniwaProfilerFactory.cpp" />
     <ClCompile Include="HakoniwaProfilerImpl.cpp" />
     <ClCompile Include="HakoniwaProfiler_i.c" />
+    <ClCompile Include="Tranpoline.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="exports.def" />
@@ -87,6 +88,7 @@
     <ClInclude Include="HakoniwaProfilerFactory.h" />
     <ClInclude Include="HakoniwaProfilerImpl.h" />
     <ClInclude Include="HakoniwaProfiler_h.h" />
+    <ClInclude Include="Tranpoline.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="HakoniwaProfiler.idl" />
