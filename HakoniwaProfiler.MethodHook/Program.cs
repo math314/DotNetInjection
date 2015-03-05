@@ -5,9 +5,26 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 namespace HakoniwaProfiler.MethodHook {
-    class Program {
+    public class RegexReplacement {
 
-        internal static string Replace(MatchEvaluator evaluator, Regex regex, string input, int count, int startat) {
+        static public string getStr1()
+        {
+            Console.WriteLine("HakoniwaProfiler.MethodHook.RegexReplacement.getStr1");
+            return "HHHH";
+        }
+
+        static public DateTime get_Now()
+        {
+            Console.WriteLine("HakoniwaProfiler.MethodHook");
+            return new DateTime();
+        }
+
+        static string a(MatchEvaluator evaluator, Regex regex, string input, int count, int startat)
+        {
+            return Replace(evaluator, regex, input, count, startat);
+        }
+
+        static string Replace(MatchEvaluator evaluator, Regex regex, string input, int count, int startat) {
             var pattern_info = typeof(Regex).GetField("pattern", BindingFlags.NonPublic | BindingFlags.Instance);
             string pattern = (string)pattern_info.GetValue(regex);
             System.Diagnostics.Debug.Write(string.Format("input = {0},pattern = {1}", input, pattern));
@@ -85,6 +102,7 @@ namespace HakoniwaProfiler.MethodHook {
 
         static void Main(string[] args) {
 
+            get_Now();
             hoge(1, 3.0, "aaa");
 
             System.Collections.ArrayList list = new System.Collections.ArrayList();

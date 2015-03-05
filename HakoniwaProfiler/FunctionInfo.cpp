@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "FunctionInfo.h"
 #include "ComUtil.h"
+#include "Debugger.h"
 
 const int MAX_LENGTH = 2048;
 
@@ -32,6 +33,8 @@ FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, F
 	hrCheck(metaDataImport->GetTypeDefProps(classTypeDef, className, MAX_LENGTH, 0, NULL, NULL));
 	metaDataImport->Release();
 
+	PCCOR_SIGNATURE signatureBlobOrigin = signatureBlob;
+
 	ULONG callConvension = IMAGE_CEE_CS_CALLCONV_MAX;
 	signatureBlob += CorSigUncompressData(signatureBlob, &callConvension);
 
@@ -56,7 +59,23 @@ FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, F
 		}
 	}
 
-	FunctionInfo* result = new FunctionInfo(functionID, classID, moduleID, tkMethod, functionName, className, assemblyName, signatureText);
+	FunctionInfo* result = new FunctionInfo();
+	
+	result->mFunctionID = functionID;
+	result->mClassID = classID;
+	result->mModuleID = moduleID;
+	result->mToken = tkMethod;
+	result->mFunctionName = functionName;
+	result->mClassName = className;
+	result->mAssemblyName = assemblyName;
+	result->mSignatureText = signatureText;
+	result->mSignatureBlob = std::vector<BYTE>(signatureBlobOrigin, signatureBlob);
+	result->mMethodAttributes = methodAttributes;
+
+	//if (signatureBlob - signatureBlobOrigin != signatureBlobLength) {
+	//	Debugger::printf(L"signatureBlobLength is invalied?");
+	//}
+
 	return result;
 }
 
@@ -237,17 +256,4 @@ PCCOR_SIGNATURE FunctionInfo::ParseSignature(IMetaDataImport *metaDataImport, PC
 	}
 
 	return signature;
-}
-
-FunctionInfo::FunctionInfo(FunctionID functionID, ClassID classID, ModuleID moduleID, mdToken token, LPWSTR functionName, LPWSTR className, LPWSTR assemblyName, LPWSTR signatureText)
-	:
-	mFunctionID(functionID),
-	mClassID(classID),
-	mModuleID(moduleID),
-	mToken(token),
-	mFunctionName(functionName),
-	mClassName(className),
-	mAssemblyName(assemblyName),
-	mSignatureText(signatureText)
-{
 }

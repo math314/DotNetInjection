@@ -48,6 +48,12 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HakoniwaProfiler.MethodHook\HakoniwaProfiler.MethodHook.csproj">
+      <Project>{6e7d6480-6e07-4d36-a7d2-5dd3d1822d4c}</Project>
+      <Name>HakoniwaProfiler.MethodHook</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

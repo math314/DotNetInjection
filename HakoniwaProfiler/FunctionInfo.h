@@ -4,6 +4,7 @@
 #include <cor.h>
 #include <corprof.h>
 #include <string>
+#include <vector>
 
 class FunctionInfo {
 public:
@@ -18,12 +19,14 @@ public:
 	const std::wstring& get_FunctionName() const { return mFunctionName; }
 	const std::wstring& get_AssemblyName() const { return mAssemblyName; }
 	const std::wstring& get_SignatureText() const { return mSignatureText; }
+	const std::vector<BYTE>& get_SignatureBlob() const { return mSignatureBlob; }
+	const DWORD get_MethodAttributes() const { return mMethodAttributes; }
+
+	static PCCOR_SIGNATURE ParseSignature(IMetaDataImport *pMDImport, PCCOR_SIGNATURE signature, WCHAR* szBuffer);
 
 private:
-	FunctionInfo(FunctionID functionID, ClassID classID, ModuleID moduleID, mdToken token, LPWSTR functionName, LPWSTR className, LPWSTR assemblyName, LPWSTR signatureText);
-	
-	static PCCOR_SIGNATURE ParseSignature(IMetaDataImport *pMDImport, PCCOR_SIGNATURE signature, WCHAR* szBuffer);
-	
+	FunctionInfo() {};
+
 	FunctionID mFunctionID;
 	ClassID mClassID;
 	ModuleID mModuleID;
@@ -32,4 +35,7 @@ private:
 	std::wstring mFunctionName;
 	std::wstring mAssemblyName;
 	std::wstring mSignatureText;
+
+	DWORD mMethodAttributes;
+	std::vector<BYTE> mSignatureBlob;
 };
