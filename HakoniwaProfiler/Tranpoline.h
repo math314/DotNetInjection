@@ -6,12 +6,13 @@
 
 #include <memory>
 #include <vector>
+#include <wrl/client.h>
 
 class FunctionInfo;
 
 class Tranpoline {
 public:
-	Tranpoline(ICorProfilerInfo2* info, std::shared_ptr<FunctionInfo>& fi)
+	Tranpoline(Microsoft::WRL::ComPtr<ICorProfilerInfo2>& info, std::shared_ptr<FunctionInfo>& fi)
 		: info(info), fi(fi)
 	{
 	}
@@ -25,6 +26,6 @@ public:
 	COR_ILMETHOD_FAT ConstructTranpolineMethodBody(DWORD codeSize);
 
 private:
-	ICorProfilerInfo2* info;
+	Microsoft::WRL::ComPtr<ICorProfilerInfo2> info;
 	std::shared_ptr<FunctionInfo> fi;
 };

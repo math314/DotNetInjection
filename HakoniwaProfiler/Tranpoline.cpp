@@ -6,12 +6,19 @@
 
 #include <vector>
 
+using Microsoft::WRL::ComPtr;
+
 mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::vector<BYTE>& publicToken, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName) {
 	//query interface
-	IMetaDataEmit* metaDataEmit = nullptr;
-	hrCheck(info->GetModuleMetaData(fi->get_ModuleID(), ofRead | ofWrite, IID_IMetaDataEmit, (IUnknown**)&metaDataEmit));
-	IMetaDataAssemblyEmit* metaDataAssemblyEmit = nullptr;
-	hrCheck(metaDataEmit->QueryInterface(IID_IMetaDataAssemblyEmit, (void**)&metaDataAssemblyEmit));
+	ComPtr<IMetaDataEmit> metaDataEmit;
+	hrCheck(info->GetModuleMetaData(fi->get_ModuleID(), ofRead | ofWrite, IID_IMetaDataEmit, (IUnknown**)metaDataEmit.GetAddressOf()));
+
+	// __uuidof(IMetaDataAssemblyEmit) undefined,
+	// so we can not compile """metaDataEmit->As(metaDataAssemblyEmit)""" ... 
+	IMetaDataAssemblyEmit* _metaDataAssemblyEmit;
+	ComPtr<IMetaDataAssemblyEmit> metaDataAssemblyEmit;
+	hrCheck(metaDataEmit.Get()->QueryInterface(IID_IMetaDataAssemblyEmit, (void**)&_metaDataAssemblyEmit)); 
+	metaDataAssemblyEmit.Attach(_metaDataAssemblyEmit);
 
 	mdAssemblyRef assemblyRef = mdAssemblyRefNil;
 	ASSEMBLYMETADATA assemblyMetaData = { 0 };
@@ -34,9 +41,6 @@ mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::
 
 	mdMemberRef memberRef = mdMemberRefNil;
 	hrCheck(metaDataEmit->DefineMemberRef(typeRef, methodName, &(defineSignatureBlob[0]), defineSignatureBlob.size(), &memberRef));
-
-	SafeRelease(&metaDataEmit);
-	SafeRelease(&metaDataAssemblyEmit);
 
 	return memberRef;
 }
@@ -101,10 +105,9 @@ COR_ILMETHOD_FAT Tranpoline::ConstructTranpolineMethodBody(DWORD codeSize) {
 }
 
 void* Tranpoline::AllocateFuctionBody(DWORD size) {
-	IMethodMalloc* methodMalloc = nullptr;
+	ComPtr<IMethodMalloc> methodMalloc;
 	hrCheck(info->GetILFunctionBodyAllocator(fi->get_ModuleID(), &methodMalloc));
 	void *allocated = methodMalloc->Alloc(size);
-	SafeRelease(&methodMalloc);
 	return allocated;
 }
 

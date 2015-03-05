@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HakoniwaProfilerBase.h"
+#include <wrl/client.h>
 
 class HakoniwaProfilerImpl :
 	public HakoniwaProfilerBase
@@ -21,7 +22,7 @@ private:
 	HRESULT SetProfilerEventMask();
 
 private:
-	ICorProfilerInfo2* mCorProfilerInfo2;
+	Microsoft::WRL::ComPtr<ICorProfilerInfo2> mCorProfilerInfo2;
 
 	long mRefCount;
 };

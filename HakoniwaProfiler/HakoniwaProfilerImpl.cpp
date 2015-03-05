@@ -16,7 +16,6 @@ HakoniwaProfilerImpl::HakoniwaProfilerImpl() {
 }
 
 HakoniwaProfilerImpl::~HakoniwaProfilerImpl() {
-	SafeRelease(&mCorProfilerInfo2);
 }
 
 HRESULT HakoniwaProfilerImpl::SetProfilerEventMask() {
@@ -64,15 +63,8 @@ STDMETHODIMP HakoniwaProfilerImpl::QueryInterface(REFIID riid, void **ppObj) {
 		return S_OK;
 	}
 
-	if (riid == IID_ICorProfilerInfo) {
-		*ppObj = static_cast<ICorProfilerInfo *>(static_cast<ICorProfilerInfo2 *>(mCorProfilerInfo2));
-		mCorProfilerInfo2->AddRef();
-		return S_OK;
-	}
-
-	if (riid == IID_ICorProfilerInfo2) {
-		*ppObj = mCorProfilerInfo2;
-		mCorProfilerInfo2->AddRef();
+	if (riid == IID_ICorProfilerInfo || riid == IID_ICorProfilerInfo2) {
+		mCorProfilerInfo2.CopyTo(riid, ppObj);
 		return S_OK;
 	}
 
@@ -94,12 +86,15 @@ ULONG STDMETHODCALLTYPE HakoniwaProfilerImpl::Release() {
 STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 	Debugger::printf(L"HakoniwaProfilerImpl::Initialize()\n");
 
-	HRESULT hr = pICorProfilerInfoUnk->QueryInterface(IID_ICorProfilerInfo2, (LPVOID*)&mCorProfilerInfo2);
+	ICorProfilerInfo2* iInfo2;
+	HRESULT hr = pICorProfilerInfoUnk->QueryInterface(__uuidof(iInfo2), (LPVOID*)&iInfo2);
 	if (FAILED(hr)) {
 		Debugger::printf(L"Error: Failed to get ICorProfiler2\n");
+		exit(-1);
 	} else {
 		Debugger::printf(L"Got ICorProfilerInfo2\n");
 	}
+	mCorProfilerInfo2.Attach(iInfo2);
 
 	hr = SetProfilerEventMask();
 	if (FAILED(hr)) {
@@ -118,7 +113,7 @@ const int MAX_LENGTH = 1024;
 #include <memory>
 
 STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, BOOL fIsSafeToBlock) {
-	std::shared_ptr<FunctionInfo> fi(FunctionInfo::CreateFunctionInfo(mCorProfilerInfo2, functionID));
+	std::shared_ptr<FunctionInfo> fi(FunctionInfo::CreateFunctionInfo(mCorProfilerInfo2.Get(), functionID));
 
 	//output function information
 	// Debugger::printf(L"%s", fi->get_SignatureText().c_str());
