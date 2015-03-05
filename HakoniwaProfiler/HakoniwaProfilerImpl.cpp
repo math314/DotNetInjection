@@ -158,19 +158,23 @@ mdMemberRef DefineInjectionMethod(ICorProfilerInfo2* info, FunctionInfo* fi, con
 	return memberRef;
 }
 
-std::vector<BYTE> ConstructTranpolineMethodIL(ICorProfilerInfo2* info, FunctionInfo* fi,mdMemberRef mdCallFunctionRef) {
-	std::vector<BYTE> newILs;
+BYTE calcNewMethodStackSize(FunctionInfo* fi) {
 	ULONG newArguments = fi->getArgumentCount();
-	
 	if (!IsMdStatic(fi->get_MethodAttributes())) {
-		//push caller object
-		newArguments++;
+		newArguments++; //push caller object
 	}
-	
+
 	if (newArguments > 0xFF) {
 		Debugger::printf(L"arguments too many");
 		exit(-1);
 	}
+
+	return (BYTE)newArguments;
+}
+
+std::vector<BYTE> ConstructTranpolineMethodIL(ICorProfilerInfo2* info, FunctionInfo* fi,mdMemberRef mdCallFunctionRef) {
+	std::vector<BYTE> newILs;
+	ULONG newArguments = calcNewMethodStackSize(fi);
 
 	// ldarg.0, ldarg.1 ... ldarg. newArguments - 1
 	for (BYTE i = 0; i < (BYTE)newArguments; i++) {
@@ -195,35 +199,46 @@ std::vector<BYTE> ConstructTranpolineMethodIL(ICorProfilerInfo2* info, FunctionI
 	return newILs;
 }
 
+COR_ILMETHOD_FAT ConstructTranpolineMethodBody(ICorProfilerInfo2* info, FunctionInfo* fi, DWORD codeSize) {
+	COR_ILMETHOD_FAT* oldHeader;
+	ULONG size;
+	info->GetILFunctionBody(fi->get_ModuleID(), fi->get_Token(), (LPCBYTE *)&oldHeader, &size);
+
+	if (!oldHeader->IsFat()) {
+		Debugger::printf(L"not fat");
+		exit(-1);
+	}
+	// dump(oldHeader, size);
+
+	COR_ILMETHOD_FAT fatHeader;
+	memcpy(&fatHeader, oldHeader, sizeof(COR_ILMETHOD));
+	fatHeader.SetCodeSize(codeSize);
+
+	return fatHeader;
+}
+
+void* AllocateFuctionBody(ICorProfilerInfo2* info, FunctionInfo* fi, DWORD size) {
+	IMethodMalloc* methodMalloc = nullptr;
+	hrCheck(info->GetILFunctionBodyAllocator(fi->get_ModuleID(), &methodMalloc));
+	void *allocated = methodMalloc->Alloc(size);
+	SafeRelease(&methodMalloc);
+	return allocated;
+}
+
 void ReplaceTest(ICorProfilerInfo2* info, FunctionInfo* fi, const wchar_t* className, const wchar_t* methodName) {
 	const WCHAR moduleName[] = L"HakoniwaProfiler.MethodHook";
 	const BYTE publicToken[] = { 0x41, 0x91, 0x82, 0x76, 0xff, 0x21, 0x51, 0x80 };
 	std::vector<BYTE> _publicToken(publicToken, publicToken + sizeof(publicToken));
 	mdMemberRef newMemberRef = DefineInjectionMethod(info, fi, moduleName, _publicToken, className, methodName);
 
-	LPCBYTE oldMethodBytes;
-	ULONG oldMethodSize;
-	hrCheck(info->GetILFunctionBody(fi->get_ModuleID(), fi->get_Token(), &oldMethodBytes, &oldMethodSize));
-
-	const COR_ILMETHOD_FAT* oldHeader = reinterpret_cast<const COR_ILMETHOD_FAT*>(oldMethodBytes);
-	if (!oldHeader->IsFat()) {
-		Debugger::printf(L"not fat");
-		exit(-1);
-	}
-
 	std::vector<BYTE> newILs = ConstructTranpolineMethodIL(info, fi, newMemberRef);
+	COR_ILMETHOD_FAT newHeader = ConstructTranpolineMethodBody(info, fi, newILs.size());
 
-	ULONG newMethodSize = sizeof(COR_ILMETHOD_FAT) + newILs.size();
-
-	IMethodMalloc* methodMalloc = NULL;
-	hrCheck(info->GetILFunctionBodyAllocator(fi->get_ModuleID(), &methodMalloc));
-	void *allocated = methodMalloc->Alloc(newMethodSize);
-	SafeRelease(&methodMalloc);
+	ULONG newMethodSize = sizeof(COR_ILMETHOD_FAT)+newILs.size();
+	void *allocated = AllocateFuctionBody(info, fi, newMethodSize);
 
 	//write new Header
-	COR_ILMETHOD_FAT* newHeader = (COR_ILMETHOD_FAT *)allocated;
-	memcpy(newHeader, oldHeader, sizeof(COR_ILMETHOD_FAT));
-	newHeader->SetCodeSize(newILs.size()); // change code size only
+	memcpy(allocated, &newHeader, sizeof(COR_ILMETHOD));
 	//write new IL
 	memcpy((BYTE*)allocated + sizeof(COR_ILMETHOD_FAT), &newILs[0], newILs.size());
 
