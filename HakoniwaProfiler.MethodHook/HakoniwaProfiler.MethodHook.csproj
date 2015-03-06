@@ -53,6 +53,12 @@
   <ItemGroup>
     <None Include="HakoniwaProfiler.MethodHook.key.snk" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ConsoleAppTest\ConsoleAppTest.csproj">
+      <Project>{4d45ae16-4a4a-4733-bb16-b2c19d648439}</Project>
+      <Name>ConsoleAppTest</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

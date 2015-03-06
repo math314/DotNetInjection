@@ -25,7 +25,7 @@ private:
 	BYTE calcNewMethodArgCount();
 	void* AllocateFuctionBody(DWORD size);
 	std::vector<BYTE> ConstructTranpolineMethodIL(mdMemberRef mdCallFunctionRef);
-	COR_ILMETHOD_FAT ConstructTranpolineMethodHeader(DWORD codeSize);
+	std::vector<BYTE> ConstructTranpolineMethodHeader(DWORD codeSize);
 
 	Microsoft::WRL::ComPtr<ICorProfilerInfo2> info;
 	std::shared_ptr<FunctionInfo> fi;

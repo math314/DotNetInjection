@@ -56,14 +56,43 @@ namespace ConsoleAppTest {
             Console.WriteLine(haveArguments("aa", "bb"));
             Console.WriteLine(intarg2(1,2));
             Console.WriteLine(haveManyArguments_("a", "b", "c", 2.0, 3, 4));
-            string a = Regex.Replace("poyohugapoyopiyo" , "piyo", "xxxx");
-            Console.WriteLine(a);
-            string b = new Regex("poyo").Replace("poyohugapoyopiyo", "xxxx");
-            Console.WriteLine(b);
+            //string a = Regex.Replace("poyohugapoyopiyo" , "piyo", "xxxx");
+            //Console.WriteLine(a);
+            //string b = new Regex("poyo").Replace("poyohugapoyopiyo", "xxxx");
+            //Console.WriteLine(b);
+
+
+
         }
 
         static void Main(string[] args) {
-            hoge();
+            //hoge();
+            //var x = TestClass.test1(1, "aaa");
+            //Console.WriteLine(x);
+            var y = new TestClass(1).test2("aaa");
+            Console.WriteLine(y);
+        }
+    }
+
+    public class TestClass {
+
+        int _a;
+
+        public TestClass(int a)
+        {
+            _a = a;
+        }
+
+        public string test2(string b)
+        {
+            Console.WriteLine(b);
+            return test1(this, b);
+        }
+
+        public static string test1(TestClass a, string b)
+        {
+            Console.WriteLine("TestClass.test1");
+            return b;
         }
     }
 }

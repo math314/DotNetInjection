@@ -137,6 +137,18 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"haveManyArguments");
 	}
 
+	//if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test1") {
+	//	Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+	//	Tranpoline tranpoline(mCorProfilerInfo2, fi);
+	//	tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"test1");
+	//}
+
+	if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test2") {
+		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		Tranpoline tranpoline(mCorProfilerInfo2, fi);
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"test2");
+	}
+
 	if (fi->get_ClassName() == L"System.Text.RegularExpressions.Regex" && fi->get_FunctionName() == L"Replace") {
 		if (fi->get_ArgumentCount() == 3 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string" && fi->get_Arguments()[2] == L"string") {
 			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
@@ -146,9 +158,7 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 			Tranpoline tranpoline(mCorProfilerInfo2, fi);
 			// tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace1");
-
 		}
-
 	}
 
 	return S_OK;

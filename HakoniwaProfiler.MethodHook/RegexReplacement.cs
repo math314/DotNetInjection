@@ -45,6 +45,7 @@ namespace HakoniwaProfiler.MethodHook {
 
         static public string Replace1(Regex regex, string input, string replacement)
         {
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacement.Replace1");
             var pattern_info = typeof(Regex).GetField("pattern", BindingFlags.NonPublic | BindingFlags.Instance);
             string pattern = (string)pattern_info.GetValue(regex);
             System.Diagnostics.Debug.Write(string.Format("input = {0},pattern = {1}", input, pattern));
@@ -59,5 +60,16 @@ namespace HakoniwaProfiler.MethodHook {
             return regex.Replace(input, replacement, -1, useOptionR ? input.Length : 0);
         }
 
+        static public string test1(int a, string b)
+        {
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacement.test1");
+            return "";
+        }
+
+        static public string test2(ConsoleAppTest.TestClass x, string b)
+        {
+            Console.WriteLine("[!] HakoniwaProfiler.MethodHook.RegexReplacement.test2");
+            return "";
+        }
     }
 }
