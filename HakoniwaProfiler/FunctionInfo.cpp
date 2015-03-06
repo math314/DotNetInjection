@@ -3,6 +3,10 @@
 #include "ComUtil.h"
 #include "Debugger.h"
 
+#include <wrl/client.h>
+
+using Microsoft::WRL::ComPtr;
+
 const int MAX_LENGTH = 2048;
 
 FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, FunctionID functionID)
@@ -19,8 +23,8 @@ FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, F
 	WCHAR assemblyName[MAX_LENGTH];
 	hrCheck(profilerInfo->GetAssemblyInfo(assemblyID, MAX_LENGTH, 0, assemblyName, NULL, NULL));
 
-	IMetaDataImport* metaDataImport = NULL;
-	mdToken token = NULL;
+	ComPtr<IMetaDataImport> metaDataImport;
+	mdToken token = 0;
 	hrCheck(profilerInfo->GetTokenAndMetaDataFromFunction(functionID, IID_IMetaDataImport, (LPUNKNOWN *)&metaDataImport, &token));
 
 	mdTypeDef classTypeDef;
@@ -31,7 +35,6 @@ FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, F
 	DWORD methodAttributes = 0;
 	hrCheck(metaDataImport->GetMethodProps(token, &classTypeDef, functionName, MAX_LENGTH, 0, &methodAttributes, &signatureBlob, &signatureBlobLength, NULL, NULL));
 	hrCheck(metaDataImport->GetTypeDefProps(classTypeDef, className, MAX_LENGTH, 0, NULL, NULL));
-	metaDataImport->Release();
 
 	PCCOR_SIGNATURE signatureBlobOrigin = signatureBlob;
 
@@ -43,38 +46,44 @@ FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, F
 
 	WCHAR returnType[MAX_LENGTH];
 	returnType[0] = '\0';
-	signatureBlob = ParseSignature(metaDataImport, signatureBlob, returnType);
+	signatureBlob = ParseSignature(metaDataImport.Get(), signatureBlob, returnType);
 
 	WCHAR signatureText[MAX_LENGTH] = L"";
-	wsprintf(signatureText, L"fid=%08X|%s %s %s::%s|arg = %d",
+	wsprintf(signatureText, L"fid=%08X|%s %s %s::%s",
 		functionID,
-		(methodAttributes & mdStatic) != 0 ? L"(nonstatic)" : L"static", returnType, className, functionName,
-		argumentCount);
+		(methodAttributes & mdStatic) == 0 ? L"(nonstatic)" : L"static", returnType, className, functionName
+		);
 
+	std::vector<std::wstring> arguments;
 	for (ULONG i = 0; (signatureBlob != NULL) && (i < argumentCount); ++i) {
 		WCHAR parameters[MAX_LENGTH];
 		parameters[0] = '\0';
-		signatureBlob = ParseSignature(metaDataImport, signatureBlob, parameters);
-
-		if (signatureBlob != NULL) {
-			wcscat(signatureText, L",");
-			wcscat(signatureText, parameters);
-		}
+		signatureBlob = ParseSignature(metaDataImport.Get(), signatureBlob, parameters);
+		arguments.push_back(parameters);
 	}
+
+	lstrcatW(signatureText, L"(");
+	for (ULONG i = 0; i < arguments.size(); i++) {
+		if(i != 0) lstrcatW(signatureText, L",");
+		lstrcatW(signatureText, arguments[i].c_str());
+	}
+	lstrcatW(signatureText, L")");
 
 	FunctionInfo* result = new FunctionInfo();
 	
 	result->mFunctionID = functionID;
 	result->mClassID = classID;
+	result->mClassTypeDef = classTypeDef;
 	result->mModuleID = moduleID;
-	result->mToken = tkMethod;
+	result->mFunctionToken = tkMethod;
 	result->mFunctionName = functionName;
 	result->mClassName = className;
 	result->mAssemblyName = assemblyName;
 	result->mSignatureText = signatureText;
 	result->mSignatureBlob = std::vector<BYTE>(signatureBlobOrigin, signatureBlob);
 	result->mMethodAttributes = methodAttributes;
-	result->mArgumentCount = argumentCount;
+	result->mRetType = returnType;
+	result->mArguments = arguments;
 
 	return result;
 }
@@ -124,7 +133,7 @@ PCCOR_SIGNATURE FunctionInfo::ParseSignature(IMetaDataImport *metaDataImport, PC
 		wcscat(signatureText, L"float64");
 		break;
 	case ELEMENT_TYPE_STRING:
-		wcscat(signatureText, L"String");
+		wcscat(signatureText, L"string");
 		break;
 	case ELEMENT_TYPE_VAR:
 		wcscat(signatureText, L"class variable(unsigned int8)");

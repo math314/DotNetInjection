@@ -19,13 +19,14 @@ public:
 
 	void Update(const wchar_t* className, const wchar_t* methodName);
 
+private:
+	std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob();
 	mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::vector<BYTE>& publicToken, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName);
 	BYTE calcNewMethodArgCount();
 	void* AllocateFuctionBody(DWORD size);
 	std::vector<BYTE> ConstructTranpolineMethodIL(mdMemberRef mdCallFunctionRef);
-	COR_ILMETHOD_FAT ConstructTranpolineMethodBody(DWORD codeSize);
+	COR_ILMETHOD_FAT ConstructTranpolineMethodHeader(DWORD codeSize);
 
-private:
 	Microsoft::WRL::ComPtr<ICorProfilerInfo2> info;
 	std::shared_ptr<FunctionInfo> fi;
 };

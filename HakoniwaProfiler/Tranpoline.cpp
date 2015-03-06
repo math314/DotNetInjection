@@ -16,6 +16,51 @@ static void dump(const void* p, int size) {
 	Debugger::printf(L"size = %d,body = %s", size, b);
 }
 
+std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob() {
+	const std::vector<BYTE>& oldSignatureBlob = fi->get_SignatureBlob();
+	
+	if (IsMdStatic(fi->get_MethodAttributes())) {
+		std::vector<BYTE> newSignatureBlob = oldSignatureBlob;
+		newSignatureBlob[0] = IMAGE_CEE_CS_CALLCONV_DEFAULT;
+		return newSignatureBlob;
+	} else {
+		ComPtr<IMetaDataImport> metaDataImport;
+		hrCheck(info->GetTokenAndMetaDataFromFunction(fi->get_FunctionID(), IID_IMetaDataImport, (LPUNKNOWN *)&metaDataImport, nullptr));
+
+		std::vector<BYTE> newSignatureBlob(oldSignatureBlob.size() * 2 + 5); // rough estimation
+		PCCOR_SIGNATURE pOldData = &oldSignatureBlob[0];
+		PCOR_SIGNATURE pNewData = &newSignatureBlob[0];
+
+		ULONG callConvension = IMAGE_CEE_CS_CALLCONV_MAX;
+		pOldData += CorSigUncompressData(pOldData, &callConvension);
+		pNewData += CorSigCompressData(IMAGE_CEE_CS_CALLCONV_DEFAULT, pNewData);
+
+		ULONG argumentCount;
+		pOldData += CorSigUncompressData(pOldData, &argumentCount);
+		pNewData += CorSigCompressData(argumentCount + 1, pNewData);
+
+		WCHAR returnType[2048];
+		returnType[0] = '\0';
+		PCCOR_SIGNATURE retTypeSig = FunctionInfo::ParseSignature(metaDataImport.Get(), pOldData, returnType);
+		int retTypeBlobSize = retTypeSig - pOldData;
+		memcpy(pNewData, pOldData, retTypeBlobSize);
+		pOldData += retTypeBlobSize;
+		pNewData += retTypeBlobSize;
+
+		//insert new arguments to newSignature
+		*pNewData++ = ELEMENT_TYPE_CMOD_OPT;
+		ULONG newArgumentTokenSize = CorSigCompressToken(fi->get_ClassTypeDef(), pNewData);
+		pNewData += newArgumentTokenSize;
+
+		//add all arguments to newSignature
+		int remineSize = pOldData - &oldSignatureBlob[0];
+		memcpy(pNewData, pOldData, remineSize);
+
+		newSignatureBlob.resize(oldSignatureBlob.size() + 1 + newArgumentTokenSize);
+		return newSignatureBlob;
+	}
+}
+
 mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::vector<BYTE>& publicToken, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName) {
 	//query interface
 	ComPtr<IMetaDataEmit> metaDataEmit;
@@ -36,15 +81,7 @@ mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::
 	mdTypeRef typeRef = mdTypeRefNil;
 	hrCheck(metaDataEmit->DefineTypeRefByName(assemblyRef, fullyQualifiedClassName, &typeRef));
 
-	std::vector<BYTE> defineSignatureBlob = fi->get_SignatureBlob();
-	defineSignatureBlob[0] = IMAGE_CEE_CS_CALLCONV_DEFAULT;
-
-	if (IsMdStatic(fi->get_MethodAttributes()) == 0) {
-		//todo : non static -> static
-		// signatureBlob extention(insert arg0 = class)
-		Debugger::printf(L"ReplaceTest : no static method replacement : %08X", fi->get_MethodAttributes());
-		exit(-1);
-	}
+	std::vector<BYTE> defineSignatureBlob = GetFunctionSignatureBlob();
 
 	mdMemberRef memberRef = mdMemberRefNil;
 	hrCheck(metaDataEmit->DefineMemberRef(typeRef, methodName, &(defineSignatureBlob[0]), defineSignatureBlob.size(), &memberRef));
@@ -53,7 +90,7 @@ mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::
 }
 
 BYTE Tranpoline::calcNewMethodArgCount() {
-	ULONG newArguments = fi->getArgumentCount();
+	ULONG newArguments = fi->get_ArgumentCount();
 	if (!IsMdStatic(fi->get_MethodAttributes())) {
 		newArguments++; //push caller object
 	}
@@ -93,19 +130,20 @@ std::vector<BYTE> Tranpoline::ConstructTranpolineMethodIL(mdMemberRef mdCallFunc
 	return newILs;
 }
 
-COR_ILMETHOD_FAT Tranpoline::ConstructTranpolineMethodBody(DWORD codeSize) {
+COR_ILMETHOD_FAT Tranpoline::ConstructTranpolineMethodHeader(DWORD codeSize) {
 	COR_ILMETHOD_FAT* oldHeader;
 	ULONG size;
-	info->GetILFunctionBody(fi->get_ModuleID(), fi->get_Token(), (LPCBYTE *)&oldHeader, &size);
-
-	if (!oldHeader->IsFat()) {
-		Debugger::printf(L"not fat");
-		exit(-1);
-	}
+	info->GetILFunctionBody(fi->get_ModuleID(), fi->get_FunctionToken(), (LPCBYTE *)&oldHeader, &size);
 	dump(oldHeader, size);
 
 	COR_ILMETHOD_FAT fatHeader;
-	memcpy(&fatHeader, oldHeader, sizeof(COR_ILMETHOD));
+	if (oldHeader->IsFat()) {
+		memcpy(&fatHeader, oldHeader, sizeof(COR_ILMETHOD));
+	} else {
+		memset(&fatHeader, 0, sizeof(fatHeader));
+		fatHeader.SetFlags(CorILMethod_FatFormat);
+		fatHeader.SetSize(sizeof(COR_ILMETHOD_FAT) / sizeof(DWORD));
+	}
 	fatHeader.SetCodeSize(codeSize);
 	fatHeader.SetMaxStack(calcNewMethodArgCount() + 1); // (arguments + function return val) size
 
@@ -126,7 +164,7 @@ void Tranpoline::Update(const wchar_t* className, const wchar_t* methodName) {
 	mdMemberRef newMemberRef = DefineInjectionMethod(moduleName, _publicToken, className, methodName);
 
 	std::vector<BYTE> newILs = ConstructTranpolineMethodIL(newMemberRef);
-	COR_ILMETHOD_FAT newHeader = ConstructTranpolineMethodBody(newILs.size());
+	COR_ILMETHOD_FAT newHeader = ConstructTranpolineMethodHeader(newILs.size());
 
 	ULONG newMethodSize = sizeof(COR_ILMETHOD_FAT)+newILs.size();
 	void *allocated = AllocateFuctionBody(newMethodSize);
@@ -136,6 +174,8 @@ void Tranpoline::Update(const wchar_t* className, const wchar_t* methodName) {
 	//write new IL
 	memcpy((BYTE*)allocated + sizeof(COR_ILMETHOD_FAT), &newILs[0], newILs.size());
 
+	dump(allocated, newMethodSize);
+
 	//set new function
-	hrCheck(info->SetILFunctionBody(fi->get_ModuleID(), fi->get_Token(), (LPCBYTE)allocated));
+	hrCheck(info->SetILFunctionBody(fi->get_ModuleID(), fi->get_FunctionToken(), (LPCBYTE)allocated));
 }
