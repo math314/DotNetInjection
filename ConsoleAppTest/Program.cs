@@ -66,9 +66,9 @@ namespace ConsoleAppTest {
         }
 
         static void Main(string[] args) {
-            //hoge();
-            //var x = TestClass.test1(1, "aaa");
-            //Console.WriteLine(x);
+            hoge();
+            var x = TestClass.test1(1, "aaa");
+            Console.WriteLine(x);
             var y = new TestClass(1).test2("aaa");
             Console.WriteLine(y);
         }
@@ -86,12 +86,12 @@ namespace ConsoleAppTest {
         public string test2(string b)
         {
             Console.WriteLine(b);
-            return test1(this, b);
+            return b;
         }
 
-        public static string test1(TestClass a, string b)
+    public static string test1(int a,string b)
         {
-            Console.WriteLine("TestClass.test1");
+            Console.WriteLine(b);
             return b;
         }
     }

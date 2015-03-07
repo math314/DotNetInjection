@@ -83,26 +83,20 @@ ULONG STDMETHODCALLTYPE HakoniwaProfilerImpl::Release() {
 }
 
 STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
-	Debugger::printf(L"HakoniwaProfilerImpl::Initialize()\n");
 
 	ICorProfilerInfo2* iInfo2;
 	HRESULT hr = pICorProfilerInfoUnk->QueryInterface(__uuidof(iInfo2), (LPVOID*)&iInfo2);
 	if (FAILED(hr)) {
 		Debugger::printf(L"Error: Failed to get ICorProfiler2\n");
 		exit(-1);
-	} else {
-		Debugger::printf(L"Got ICorProfilerInfo2\n");
-	}
+	} 
 	mCorProfilerInfo2.Attach(iInfo2);
 
 	hr = SetProfilerEventMask();
 	if (FAILED(hr)) {
 		Debugger::printf(L"Error: Failed to SetProfilerEventMask\n");
 		exit(-1);
-	} else {
-		Debugger::printf(L"SetEventMask()\n");
 	}
-
 	Debugger::printf(L"Successfully initialized profiling\n");
 
 	return S_OK;
@@ -137,11 +131,11 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"haveManyArguments");
 	}
 
-	//if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test1") {
-	//	Debugger::printf(L"%s", fi->get_SignatureText().c_str());
-	//	Tranpoline tranpoline(mCorProfilerInfo2, fi);
-	//	tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"test1");
-	//}
+	if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test1") {
+		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		Tranpoline tranpoline(mCorProfilerInfo2, fi);
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"test1");
+	}
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test2") {
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());

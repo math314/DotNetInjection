@@ -90,7 +90,7 @@ std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob() {
 		pNewData += retTypeBlobSize;
 
 		//insert new arguments to newSignature
-		*pNewData++ = ELEMENT_TYPE_CMOD_OPT;
+		*pNewData++ = ELEMENT_TYPE_CLASS;
 		ULONG newArgumentTokenSize = CorSigCompressToken(fi->get_ClassTypeDef(), pNewData);
 		pNewData += newArgumentTokenSize;
 
@@ -226,21 +226,7 @@ void Tranpoline::Update(const wchar_t* className, const wchar_t* methodName) {
 	//write new IL
 	memcpy((BYTE*)allocated + newHeader.size(), &newILs[0], newILs.size());
 
-	dump(allocated, newHeader.size() + newILs.size());
-
-	//COR_ILMETHOD_FAT* oldHeader;
-	//ULONG size;
-	//info->GetILFunctionBody(fi->get_ModuleID(), fi->get_FunctionToken(), (LPCBYTE *)&oldHeader, &size);
-
-	//void *allocated = AllocateFuctionBody(size);
-	//memcpy(allocated, oldHeader, size);
-	//set new function
-
-	// ((BYTE*)allocated)[0] = 0x0A;
-	// ((BYTE*)allocated)[1] = 0x03;
-	// ((BYTE*)allocated)[2] = 0x2A;
-	((BYTE*)allocated)[4] = 0x0E;
-	((BYTE*)allocated)[7] = 0x08;
+	// dump(allocated, newHeader.size() + newILs.size());
 
 	hrCheck(info->SetILFunctionBody(fi->get_ModuleID(), fi->get_FunctionToken(), (LPCBYTE)allocated));
 }
