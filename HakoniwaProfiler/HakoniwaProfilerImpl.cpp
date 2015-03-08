@@ -147,11 +147,19 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 		if (fi->get_ArgumentCount() == 3 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string" && fi->get_Arguments()[2] == L"string") {
 			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 			Tranpoline tranpoline(mCorProfilerInfo2, fi);
-			tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace0");
+			tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace");
 		} else if(fi->get_ArgumentCount() == 2 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string") {
 			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 			Tranpoline tranpoline(mCorProfilerInfo2, fi);
-			// tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace1");
+			tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace");
+		}
+	}
+
+	if (fi->get_ClassName() == L"System.Text.RegularExpressions.Regex" && fi->get_FunctionName() == L"IsMatch") {
+		if (fi->get_ArgumentCount() == 2 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string") {
+			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+			Tranpoline tranpoline(mCorProfilerInfo2, fi);
+			tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"IsMatch");
 		}
 	}
 

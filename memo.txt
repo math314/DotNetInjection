@@ -59,6 +59,9 @@
     * デフォルトではSystem.Security.AllowPartiallyTrustedCallersが暗に宣言されているが，これではダメらしい
   * 参考[8]
 
+* System.BadImageFormatException: バイナリ シグネチャが不適切です。(HRESULT = 0x80131192)
+  * metaDataEmit->DefineMemberRef で設定したsignatureBlobにバグがあった
+
 参考にした記事達
 ==================
 

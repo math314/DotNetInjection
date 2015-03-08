@@ -56,12 +56,10 @@ namespace ConsoleAppTest {
             Console.WriteLine(haveArguments("aa", "bb"));
             Console.WriteLine(intarg2(1,2));
             Console.WriteLine(haveManyArguments_("a", "b", "c", 2.0, 3, 4));
-            //string a = Regex.Replace("poyohugapoyopiyo" , "piyo", "xxxx");
-            //Console.WriteLine(a);
-            //string b = new Regex("poyo").Replace("poyohugapoyopiyo", "xxxx");
-            //Console.WriteLine(b);
-
-
+            string a = Regex.Replace("poyohugapoyopiyo", "piyo", "xxxx");
+            Console.WriteLine(a);
+            string b = new Regex("poyo").Replace("poyohugapoyopiyo", "xxxx");
+            Console.WriteLine(b);
 
         }
 

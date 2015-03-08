@@ -13,16 +13,16 @@ void debug(IMetaDataImport* metaDataImport, FunctionInfo* fi, PCCOR_SIGNATURE si
 
 	ULONG callConvension = IMAGE_CEE_CS_CALLCONV_MAX;
 	signatureBlob += CorSigUncompressData(signatureBlob, &callConvension);
-	Debugger::printf(L"callConvension = %X", callConvension);
+	// Debugger::printf(L"callConvension = %X", callConvension);
 
 	ULONG argumentCount;
 	signatureBlob += CorSigUncompressData(signatureBlob, &argumentCount);
-	Debugger::printf(L"argumentCount = %d", argumentCount);
+	// Debugger::printf(L"argumentCount = %d", argumentCount);
 
 	WCHAR returnType[2048];
 	returnType[0] = '\0';
 	signatureBlob = FunctionInfo::ParseSignature(metaDataImport, signatureBlob, returnType);
-	Debugger::printf(L"returnType = %s", returnType);
+	// Debugger::printf(L"returnType = %s", returnType);
 
 	WCHAR signatureText[2048] = L"";
 	wsprintf(signatureText, L"fid=%08X|%s %s %s::%s",
@@ -35,7 +35,7 @@ void debug(IMetaDataImport* metaDataImport, FunctionInfo* fi, PCCOR_SIGNATURE si
 		WCHAR parameters[2048];
 		parameters[0] = '\0';
 		signatureBlob = FunctionInfo::ParseSignature(metaDataImport, signatureBlob, parameters);
-		Debugger::printf(L"arguments %d : %s",i,parameters);
+		// Debugger::printf(L"arguments %d : %s",i,parameters);
 		arguments.push_back(parameters);
 	}
 
@@ -45,7 +45,7 @@ void debug(IMetaDataImport* metaDataImport, FunctionInfo* fi, PCCOR_SIGNATURE si
 		lstrcatW(signatureText, arguments[i].c_str());
 	}
 	lstrcatW(signatureText, L")");
-	Debugger::printf(L"%s",signatureText);
+	// Debugger::printf(L"%s",signatureText);
 }
 
 static void dump(const void* p, int size) {
@@ -60,12 +60,12 @@ std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob() {
 	const std::vector<BYTE>& oldSignatureBlob = fi->get_SignatureBlob();
 	
 	if (IsMdStatic(fi->get_MethodAttributes())) {
-		Debugger::printf(L"static method replacement");
+		// Debugger::printf(L"static method replacement");
 		std::vector<BYTE> newSignatureBlob = oldSignatureBlob;
 		newSignatureBlob[0] = IMAGE_CEE_CS_CALLCONV_DEFAULT;
 		return newSignatureBlob;
 	} else {
-		Debugger::printf(L"non static method remplacement");
+		// Debugger::printf(L"non static method remplacement");
 		ComPtr<IMetaDataImport> metaDataImport;
 		hrCheck(info->GetTokenAndMetaDataFromFunction(fi->get_FunctionID(), IID_IMetaDataImport, (LPUNKNOWN *)&metaDataImport, nullptr));
 
@@ -101,8 +101,6 @@ std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob() {
 		newSignatureBlob.resize(oldSignatureBlob.size() + 1 + newArgumentTokenSize);
 
 		debug(metaDataImport.Get(), fi.get(), &newSignatureBlob[0]);
-
-		Debugger::printf(L"non static end");
 
 		return newSignatureBlob;
 	}
@@ -181,7 +179,7 @@ std::vector<BYTE> Tranpoline::ConstructTranpolineMethodHeader(DWORD codeSize) {
 	COR_ILMETHOD_FAT* oldHeader;
 	ULONG size;
 	info->GetILFunctionBody(fi->get_ModuleID(), fi->get_FunctionToken(), (LPCBYTE *)&oldHeader, &size);
-	dump(oldHeader, size);
+	// dump(oldHeader, size);
 
 	COR_ILMETHOD_FAT fatHeader;
 	if (oldHeader->IsFat()) {

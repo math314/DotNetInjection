@@ -151,7 +151,7 @@ PCCOR_SIGNATURE FunctionInfo::ParseSignature(IMetaDataImport *metaDataImport, PC
 		wcscat(signatureText, L"unsigned int");
 		break;
 	case ELEMENT_TYPE_OBJECT:
-		wcscat(signatureText, L"Object");
+		wcscat(signatureText, L"object");
 		break;
 	case ELEMENT_TYPE_SZARRAY:
 		signature = ParseSignature(metaDataImport, signature, signatureText);
