@@ -62,7 +62,7 @@
     * 参考[8]
 
 * System.Security.SecurityTransparentを指定したアセンブリから，System.Security.AllowPartiallyTrustedCallersのアセンブリを呼び出せない
-    * AllowPartiallyTrustedCallersのアセンブリのメソッドを置き換えるにはSAllowPartiallyTrustedCallers，
+    * AllowPartiallyTrustedCallersのアセンブリのメソッドを置き換えるにはAllowPartiallyTrustedCallers，
     SecurityTransparentなアセンブリのメソッドを置き換えるにはSecurityTransparentのアセンブリを使う必要がある？
     * メソッドにSecuritySafeCritical属性をつけて試してみたが，セキュリティの例外が発生してしまった．
     * 置き換え先のアセンブリを2つ用意すれば解決するが，本質的ではないため，ConsoleAppTestはSecurityTransparent属性をつけている．
@@ -76,6 +76,67 @@
     * 解決方法は，ConsoleAppTestに署名をするか，ConsoleAppTestで定義されている型を一切参照しないか，のどちらかである
     * 今回は簡単のため，前者の署名をした．
 
+実行方法
+=================
+
+    ...\DotNetInjection>REM "普通に実行する"
+    ...\DotNetInjection> cd Release
+    ...\DotNetInjection\Release>ConsoleAppTest.exe
+
+    ...\DotNetInjection>REM "関数を置き換えて実行する"
+    ...\DotNetInjection> cd Release
+    ...\DotNetInjection\Release>Injector.exe ConsoleAppTest.exe
+
+
+実行例
+=============
+
+普通に実行した場合
+-------------------------
+
+    ...\DotNetInjection\Release>ConsoleAppTest.exe
+    2015/03/11 22:55:31
+    poyohugapoyoxxxx
+    poyohugapoyoxxxx
+    ConsoleAppTest.Program.getStr1
+    getStr1
+    aa + bb
+    3
+    a + b + c + 2 + 3 + 4
+    TestClass.test2 : 1 , aaa
+    aaa
+    TestClass.test2 : aaa
+    aaa
+
+関数を置き換えて実行した場合
+-----------------------------------
+
+    ...\DotNetInjection\Release>Injector.exe ConsoleAppTest.exe
+    ConsoleAppTest started.
+    [!] HakoniwaProfiler.MethodHook.MethodHook.get_Now
+    2000/01/01 0:00:00
+    [!] HakoniwaProfiler.MethodHook.MethodHook.Replace
+    ------------------------------
+    input = poyohugapoyopiyo
+    pattern = piyo,pattern_length = 4
+    ------------------------------
+    poyohugapoyopiyo
+    [!] HakoniwaProfiler.MethodHook.MethodHook.Replace
+    ------------------------------
+    input = poyohugapoyopiyo
+    pattern = piyo,pattern_length = 4
+    ------------------------------
+    poyohugapoyopiyo
+    [!] HakoniwaProfiler.MethodHook.MethodHook.getStr1
+    HHHH
+    [!] HakoniwaProfiler.MethodHook.MethodHook.haveArguments
+    aa + bb
+    3
+    [!] HakoniwaProfiler.MethodHook.MethodHook.haveManyArguments
+    a + b + c + 2 + 3 + 4
+    [!] HakoniwaProfiler.MethodHook.MethodHook.test1
+
+    [!] HakoniwaProfiler.MethodHook.MethodHook.test2
 
 参考にした記事達
 ==================
@@ -85,10 +146,10 @@
     * 別の記事を探すことに
 
 * http://www.codeproject.com/Articles/453065/ILRewriting-for-beginners [2]
-    *上記の[1]を読みやすくしたもの，作者は別
+    * 上記の[1]を読みやすくしたもの，作者は別
 
 * https://msdn.microsoft.com/en-us/magazine/cc188743.aspx [3]
-．Net Internalsの記事
+    * ．Net Internalsの記事
     * サンプルは一部書き換えるとコンパイルは通るが，[2]で間に合っているため使用せず
     * [1]にある説明をより詳細にしたもの
 
