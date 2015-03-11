@@ -39,7 +39,7 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>HakoniwaProfiler.MethodHook.key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>HakoniwaProfiler.MethodHook.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -47,11 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RegexReplacement.cs" />
+    <Compile Include="MethodHook.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="HakoniwaProfiler.MethodHook.key.snk" />
+    <None Include="HakoniwaProfiler.MethodHook.snk" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConsoleAppTest\ConsoleAppTest.csproj">
