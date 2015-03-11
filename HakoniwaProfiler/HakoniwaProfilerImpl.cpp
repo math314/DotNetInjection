@@ -107,60 +107,59 @@ STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, BOOL fIsSafeToBlock) {
 	std::shared_ptr<FunctionInfo> fi(FunctionInfo::CreateFunctionInfo(mCorProfilerInfo2.Get(), functionID));
 
+	//クラス名，メソッド名が一致する物を置き換える
 	if (fi->get_ClassName() == L"System.DateTime" && fi->get_FunctionName() == L"get_Now") {
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
-		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"get_Now");
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"get_Now");
+	}
+
+	if (fi->get_ClassName() == L"System.Text.RegularExpressions.Regex" && fi->get_FunctionName() == L"Replace") {
+		//overloadされているメソッドは，引数を確認して置き換え対象か判断する
+		if (fi->get_ArgumentCount() == 3 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string" && fi->get_Arguments()[2] == L"string") {
+			// staticなメソッドの置き換え
+			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+			Tranpoline tranpoline(mCorProfilerInfo2, fi);
+			tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"Replace");
+		} else if (fi->get_ArgumentCount() == 2 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string") {
+			// 非staticなメソッドの置き換え
+			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+			Tranpoline tranpoline(mCorProfilerInfo2, fi);
+			tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"Replace");
+		}
 	}
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"getStr1") {
+		//テストプログラムのメソッドを置き換える
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
-		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"getStr1");
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"getStr1");
 	}
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"haveArguments") {
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
-		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"haveArguments");
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"haveArguments");
 	}
 
 	if(fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"haveManyArguments") {
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
-		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"haveManyArguments");
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"haveManyArguments");
 	}
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test1") {
+		// staticなメソッドの置き換え
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
-		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"test1");
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"test1");
 	}
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test2") {
+		// 非staticなメソッドの置き換え
 		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
-		tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"test2");
-	}
-
-	if (fi->get_ClassName() == L"System.Text.RegularExpressions.Regex" && fi->get_FunctionName() == L"Replace") {
-		if (fi->get_ArgumentCount() == 3 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string" && fi->get_Arguments()[2] == L"string") {
-			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
-			Tranpoline tranpoline(mCorProfilerInfo2, fi);
-			tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace");
-		} else if(fi->get_ArgumentCount() == 2 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string") {
-			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
-			Tranpoline tranpoline(mCorProfilerInfo2, fi);
-			tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"Replace");
-		}
-	}
-
-	if (fi->get_ClassName() == L"System.Text.RegularExpressions.Regex" && fi->get_FunctionName() == L"IsMatch") {
-		if (fi->get_ArgumentCount() == 2 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string") {
-			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
-			Tranpoline tranpoline(mCorProfilerInfo2, fi);
-			tranpoline.Update(L"HakoniwaProfiler.MethodHook.RegexReplacement", L"IsMatch");
-		}
+		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"test2");
 	}
 
 	return S_OK;

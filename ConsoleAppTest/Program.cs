@@ -13,23 +13,6 @@ namespace ConsoleAppTest {
             return "getStr1";
         }
 
-        static DateTime getDate()
-        {
-            Console.WriteLine("ConsoleAppTest.Program.getDate");
-            return DateTime.Now;
-        }
-
-        static string getStr2()
-        {
-            return "getStr2";
-        }
-
-        static string fff()
-        {
-            return getStr1();
-            // return get_Now_dummy();
-        }
-
         static string haveArguments(string arg1, string arg2)
         {
             return string.Format("{0} + {1}", arg1, arg2);
@@ -40,26 +23,22 @@ namespace ConsoleAppTest {
             return string.Format("{0} + {1} + {2} + {3} + {4} + {5}", arg1, arg2, arg3, arg4, arg5, arg6);
         }
 
-        static string haveManyArguments_(string arg1, string arg2, string arg3, double arg4, int arg5, int arg6)
-        {
-            return haveManyArguments(arg1, arg2, arg3, arg4, arg5, arg6);
-        }
-
         static int intarg2(int x,int b)
         {
             return x + b;
         }
 
         static void hoge() {
-            Console.WriteLine(fff());
-            Console.WriteLine(getDate());
-            Console.WriteLine(haveArguments("aa", "bb"));
-            Console.WriteLine(intarg2(1,2));
-            Console.WriteLine(haveManyArguments_("a", "b", "c", 2.0, 3, 4));
+            Console.WriteLine(DateTime.Now);
             string a = Regex.Replace("poyohugapoyopiyo", "piyo", "xxxx");
             Console.WriteLine(a);
-            string b = new Regex("poyo").Replace("poyohugapoyopiyo", "xxxx");
+            string b = new Regex("piyo").Replace("poyohugapoyopiyo", "xxxx");
             Console.WriteLine(b);
+            Console.WriteLine(getStr1());
+            
+            Console.WriteLine(haveArguments("aa", "bb"));
+            Console.WriteLine(intarg2(1,2));
+            Console.WriteLine(haveManyArguments("a", "b", "c", 2.0, 3, 4));
 
         }
 
@@ -83,13 +62,13 @@ namespace ConsoleAppTest {
 
         public string test2(string b)
         {
-            Console.WriteLine(b);
+            Console.WriteLine("TestClass.test2 : {0}", b);
             return b;
         }
 
     public static string test1(int a,string b)
         {
-            Console.WriteLine(b);
+            Console.WriteLine("TestClass.test2 : {0} , {1}",a, b);
             return b;
         }
     }
