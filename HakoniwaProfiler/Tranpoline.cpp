@@ -111,8 +111,8 @@ mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::
 	ComPtr<IMetaDataEmit> metaDataEmit;
 	hrCheck(info->GetModuleMetaData(fi->get_ModuleID(), ofRead | ofWrite, IID_IMetaDataEmit, (IUnknown**)metaDataEmit.GetAddressOf()));
 
-	// __uuidof(IMetaDataAssemblyEmit) undefined,
-	// so we can not compile """metaDataEmit->As(metaDataAssemblyEmit)""" ... 
+	// __uuidof(IMetaDataAssemblyEmit) is undefined,
+	// since we can not compile """metaDataEmit->As(metaDataAssemblyEmit)""" ... 
 	IMetaDataAssemblyEmit* _metaDataAssemblyEmit;
 	ComPtr<IMetaDataAssemblyEmit> metaDataAssemblyEmit;
 	hrCheck(metaDataEmit.Get()->QueryInterface(IID_IMetaDataAssemblyEmit, (void**)&_metaDataAssemblyEmit)); 
@@ -141,7 +141,7 @@ BYTE Tranpoline::calcNewMethodArgCount() {
 	}
 
 	if (newArguments > 0xFF) {
-		Debugger::printf(L"arguments too many");
+		Debugger::printf(L"too many arguments");
 		exit(-1);
 	}
 
