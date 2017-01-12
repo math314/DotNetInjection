@@ -1,6 +1,11 @@
 *.suo
 *.sdf
 *.opensdf
+*.VC.db
+*.VC.opendb
+HakoniwaProfiler/HakoniwaProfiler_h.h
+HakoniwaProfiler/HakoniwaProfiler_i.c
+HakoniwaProfiler/HakoniwaProfiler_p.c
 bin/
 obj/
 Debug/
