@@ -106,7 +106,7 @@ std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob() {
 	}
 }
 
-mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* fullyQualifiedClassName, const wchar_t* methodName) {
+mdMemberRef Tranpoline::DefineHakoniwaMethodIntoThisAssembly(const wchar_t* fullyQualifiedClassName, const wchar_t* methodName) {
 	static const WCHAR assemblyName[] = L"HakoniwaProfiler.MethodHook";
 	static const std::vector<BYTE> publicToken = { 0x41, 0x91, 0x82, 0x76, 0xff, 0x21, 0x51, 0x80 };
 
@@ -136,7 +136,7 @@ mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* fullyQualifiedClass
 	return memberRef;
 }
 
-BYTE Tranpoline::calcNewMethodArgCount() {
+ULONG Tranpoline::calcNewMethodArgCount() {
 	ULONG newArguments = fi->get_ArgumentCount();
 	if (!IsMdStatic(fi->get_MethodAttributes())) {
 		newArguments++; //push caller object
@@ -147,7 +147,7 @@ BYTE Tranpoline::calcNewMethodArgCount() {
 		exit(-1);
 	}
 
-	return (BYTE)newArguments;
+	return newArguments;
 }
 
 std::vector<BYTE> Tranpoline::ConstructTranpolineMethodIL(mdMemberRef mdCallFunctionRef) {
@@ -155,12 +155,12 @@ std::vector<BYTE> Tranpoline::ConstructTranpolineMethodIL(mdMemberRef mdCallFunc
 	ULONG newArguments = calcNewMethodArgCount();
 
 	// ldarg.0, ldarg.1 ... ldarg. newArguments - 1
-	for (BYTE i = 0; i < (BYTE)newArguments; i++) {
+	for (ULONG i = 0; i < newArguments; i++) {
 		if (i < 4) {
-			newILs.push_back(0x02 + i); //ldarg.0 ~ ldarg.3
+			newILs.push_back(0x02 + (BYTE)i); //ldarg.0 ~ ldarg.3
 		} else {
 			newILs.push_back(0x0E);
-			newILs.push_back(i); //ldarg.s <index>
+			newILs.push_back((BYTE)i); //ldarg.s <index>
 		}
 	}
 
@@ -210,7 +210,7 @@ void* Tranpoline::AllocateFuctionBody(DWORD size) {
 }
 
 void Tranpoline::Update(const wchar_t* className, const wchar_t* methodName) {
-	mdMemberRef newMemberRef = DefineInjectionMethod(className, methodName);
+	mdMemberRef newMemberRef = DefineHakoniwaMethodIntoThisAssembly(className, methodName);
 
 	std::vector<BYTE> newILs = ConstructTranpolineMethodIL(newMemberRef);
 	std::vector<BYTE> newHeader = ConstructTranpolineMethodHeader(newILs.size());
