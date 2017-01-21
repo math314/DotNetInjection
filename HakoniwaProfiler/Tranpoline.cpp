@@ -106,13 +106,15 @@ std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob() {
 	}
 }
 
-mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::vector<BYTE>& publicToken, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName) {
+mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* fullyQualifiedClassName, const wchar_t* methodName) {
+	static const WCHAR assemblyName[] = L"HakoniwaProfiler.MethodHook";
+	static const std::vector<BYTE> publicToken = { 0x41, 0x91, 0x82, 0x76, 0xff, 0x21, 0x51, 0x80 };
+
 	//query interface
 	ComPtr<IMetaDataEmit> metaDataEmit;
 	hrCheck(info->GetModuleMetaData(fi->get_ModuleID(), ofRead | ofWrite, IID_IMetaDataEmit, (IUnknown**)metaDataEmit.GetAddressOf()));
 
-	// __uuidof(IMetaDataAssemblyEmit) is undefined,
-	// since we can not compile """metaDataEmit->As(metaDataAssemblyEmit)""" ... 
+	//we can not compile """metaDataEmit->As(metaDataAssemblyEmit)""" since `__uuidof(IMetaDataAssemblyEmit)` is undefined... 
 	IMetaDataAssemblyEmit* _metaDataAssemblyEmit;
 	ComPtr<IMetaDataAssemblyEmit> metaDataAssemblyEmit;
 	hrCheck(metaDataEmit.Get()->QueryInterface(IID_IMetaDataAssemblyEmit, (void**)&_metaDataAssemblyEmit)); 
@@ -208,10 +210,7 @@ void* Tranpoline::AllocateFuctionBody(DWORD size) {
 }
 
 void Tranpoline::Update(const wchar_t* className, const wchar_t* methodName) {
-	const WCHAR moduleName[] = L"HakoniwaProfiler.MethodHook";
-	const BYTE publicToken[] = { 0x41, 0x91, 0x82, 0x76, 0xff, 0x21, 0x51, 0x80 };
-	std::vector<BYTE> _publicToken(publicToken, publicToken + sizeof(publicToken));
-	mdMemberRef newMemberRef = DefineInjectionMethod(moduleName, _publicToken, className, methodName);
+	mdMemberRef newMemberRef = DefineInjectionMethod(className, methodName);
 
 	std::vector<BYTE> newILs = ConstructTranpolineMethodIL(newMemberRef);
 	std::vector<BYTE> newHeader = ConstructTranpolineMethodHeader(newILs.size());

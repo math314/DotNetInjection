@@ -21,7 +21,7 @@ public:
 
 private:
 	std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob();
-	mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* assemblyName, std::vector<BYTE>& publicToken, const wchar_t* fullyQualifiedClassName, const wchar_t* methodName);
+	mdMemberRef Tranpoline::DefineInjectionMethod(const wchar_t* fullyQualifiedClassName, const wchar_t* methodName);
 	BYTE calcNewMethodArgCount();
 	void* AllocateFuctionBody(DWORD size);
 	std::vector<BYTE> ConstructTranpolineMethodIL(mdMemberRef mdCallFunctionRef);
