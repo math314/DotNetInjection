@@ -5,7 +5,7 @@
 #include <stdarg.h>
 #include <Windows.h>
 
-void Debugger::printf(const wchar_t *format, ...){
+void DebugPrintf(const wchar_t *format, ...){
 	static wchar_t buffer[10000];
 	
 	va_list arg;

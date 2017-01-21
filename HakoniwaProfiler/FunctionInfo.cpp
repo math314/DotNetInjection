@@ -1,3 +1,6 @@
+// FunctionInfo class is originally from https://www.codeproject.com/articles/17275/really-easy-logging-using-il-rewriting-and-the-net
+// modified by https://github.com/math314/
+
 #define _CRT_SECURE_NO_WARNINGS
 #include "FunctionInfo.h"
 #include "ComUtil.h"
@@ -8,7 +11,6 @@
 using Microsoft::WRL::ComPtr;
 
 const int MAX_LENGTH = 2048;
-
 FunctionInfo *FunctionInfo::CreateFunctionInfo(ICorProfilerInfo *profilerInfo, FunctionID functionID)
 {
 	ClassID classID = 0;

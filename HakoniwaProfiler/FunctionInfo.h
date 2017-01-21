@@ -1,3 +1,6 @@
+// FunctionInfo class is originally from https://www.codeproject.com/articles/17275/really-easy-logging-using-il-rewriting-and-the-net
+// modified by https://github.com/math314/
+
 #pragma once
 
 #include <Windows.h>

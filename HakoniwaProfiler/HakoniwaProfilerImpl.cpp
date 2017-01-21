@@ -20,9 +20,7 @@ HakoniwaProfilerImpl::~HakoniwaProfilerImpl() {
 
 HRESULT HakoniwaProfilerImpl::SetProfilerEventMask() {
 	DWORD eventMask = 0;
-	eventMask |= COR_PRF_MONITOR_NONE;
 	eventMask |= COR_PRF_MONITOR_JIT_COMPILATION;
-	eventMask |= COR_PRF_DISABLE_INLINING;
 	eventMask |= COR_PRF_DISABLE_OPTIMIZATIONS;
 	eventMask |= COR_PRF_USE_PROFILE_IMAGES;
 
@@ -87,17 +85,17 @@ STDMETHODIMP HakoniwaProfilerImpl::Initialize(IUnknown *pICorProfilerInfoUnk) {
 	ICorProfilerInfo2* iInfo2;
 	HRESULT hr = pICorProfilerInfoUnk->QueryInterface(__uuidof(iInfo2), (LPVOID*)&iInfo2);
 	if (FAILED(hr)) {
-		Debugger::printf(L"Error: Failed to get ICorProfiler2\n");
+		DebugPrintf(L"Error: Failed to get ICorProfiler2\n");
 		exit(-1);
 	} 
 	mCorProfilerInfo2.Attach(iInfo2);
 
 	hr = SetProfilerEventMask();
 	if (FAILED(hr)) {
-		Debugger::printf(L"Error: Failed to SetProfilerEventMask\n");
+		DebugPrintf(L"Error: Failed in SetProfilerEventMask\n");
 		exit(-1);
 	}
-	Debugger::printf(L"Successfully initialized profiling\n");
+	DebugPrintf(L"Successfully initialized profiling\n");
 
 	return S_OK;
 }
@@ -109,7 +107,7 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 
 	//クラス名，メソッド名が一致する物を置き換える
 	if (fi->get_ClassName() == L"System.DateTime" && fi->get_FunctionName() == L"get_Now") {
-		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		DebugPrintf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"get_Now");
 	}
@@ -118,12 +116,12 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 		//overloadされているメソッドは，引数を確認して置き換え対象か判断する
 		if (fi->get_ArgumentCount() == 3 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string" && fi->get_Arguments()[2] == L"string") {
 			// staticなメソッドの置き換え
-			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+			DebugPrintf(L"%s", fi->get_SignatureText().c_str());
 			Tranpoline tranpoline(mCorProfilerInfo2, fi);
 			tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"Replace");
 		} else if (fi->get_ArgumentCount() == 2 && fi->get_Arguments()[0] == L"string" && fi->get_Arguments()[1] == L"string") {
 			// 非staticなメソッドの置き換え
-			Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+			DebugPrintf(L"%s", fi->get_SignatureText().c_str());
 			Tranpoline tranpoline(mCorProfilerInfo2, fi);
 			tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"Replace");
 		}
@@ -131,33 +129,33 @@ STDMETHODIMP HakoniwaProfilerImpl::JITCompilationStarted(FunctionID functionID, 
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"getStr1") {
 		//テストプログラムのメソッドを置き換える
-		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		DebugPrintf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"getStr1");
 	}
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"haveArguments") {
-		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		DebugPrintf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"haveArguments");
 	}
 
 	if(fi->get_ClassName() == L"ConsoleAppTest.Program" && fi->get_FunctionName() == L"haveManyArguments") {
-		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		DebugPrintf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"haveManyArguments");
 	}
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test1") {
 		// staticなメソッドの置き換え
-		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		DebugPrintf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"test1");
 	}
 
 	if (fi->get_ClassName() == L"ConsoleAppTest.TestClass" && fi->get_FunctionName() == L"test2") {
 		// 非staticなメソッドの置き換え
-		Debugger::printf(L"%s", fi->get_SignatureText().c_str());
+		DebugPrintf(L"%s", fi->get_SignatureText().c_str());
 		Tranpoline tranpoline(mCorProfilerInfo2, fi);
 		tranpoline.Update(L"HakoniwaProfiler.MethodHook.MethodHook", L"test2");
 	}

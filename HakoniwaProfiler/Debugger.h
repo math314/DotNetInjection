@@ -1,6 +1,3 @@
 #pragma once
 
-class Debugger {
-public:
-	static void printf(const wchar_t *format, ...);
-};
+void DebugPrintf(const wchar_t *format, ...);

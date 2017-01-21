@@ -13,16 +13,16 @@ void debug(IMetaDataImport* metaDataImport, FunctionInfo* fi, PCCOR_SIGNATURE si
 
 	ULONG callConvension = IMAGE_CEE_CS_CALLCONV_MAX;
 	signatureBlob += CorSigUncompressData(signatureBlob, &callConvension);
-	// Debugger::printf(L"callConvension = %X", callConvension);
+	// DebugPrintf(L"callConvension = %X", callConvension);
 
 	ULONG argumentCount;
 	signatureBlob += CorSigUncompressData(signatureBlob, &argumentCount);
-	// Debugger::printf(L"argumentCount = %d", argumentCount);
+	// DebugPrintf(L"argumentCount = %d", argumentCount);
 
 	WCHAR returnType[2048];
 	returnType[0] = '\0';
 	signatureBlob = FunctionInfo::ParseSignature(metaDataImport, signatureBlob, returnType);
-	// Debugger::printf(L"returnType = %s", returnType);
+	// DebugPrintf(L"returnType = %s", returnType);
 
 	WCHAR signatureText[2048] = L"";
 	wsprintf(signatureText, L"fid=%08X|%s %s %s::%s",
@@ -35,7 +35,7 @@ void debug(IMetaDataImport* metaDataImport, FunctionInfo* fi, PCCOR_SIGNATURE si
 		WCHAR parameters[2048];
 		parameters[0] = '\0';
 		signatureBlob = FunctionInfo::ParseSignature(metaDataImport, signatureBlob, parameters);
-		// Debugger::printf(L"arguments %d : %s",i,parameters);
+		// DebugPrintf(L"arguments %d : %s",i,parameters);
 		arguments.push_back(parameters);
 	}
 
@@ -45,7 +45,7 @@ void debug(IMetaDataImport* metaDataImport, FunctionInfo* fi, PCCOR_SIGNATURE si
 		lstrcatW(signatureText, arguments[i].c_str());
 	}
 	lstrcatW(signatureText, L")");
-	// Debugger::printf(L"%s",signatureText);
+	// DebugPrintf(L"%s",signatureText);
 }
 
 static void dump(const void* p, int size) {
@@ -53,19 +53,19 @@ static void dump(const void* p, int size) {
 	for (int i = 0; i < size; i++) {
 		wsprintf(b + 3 * i, L"%02X,", ((const BYTE*)p)[i]);
 	}
-	Debugger::printf(L"size = %d,body = %s", size, b);
+	DebugPrintf(L"size = %d,body = %s", size, b);
 }
 
 std::vector<BYTE> Tranpoline::GetFunctionSignatureBlob() {
 	const std::vector<BYTE>& oldSignatureBlob = fi->get_SignatureBlob();
 	
 	if (IsMdStatic(fi->get_MethodAttributes())) {
-		// Debugger::printf(L"static method replacement");
+		// DebugPrintf(L"static method replacement");
 		std::vector<BYTE> newSignatureBlob = oldSignatureBlob;
 		newSignatureBlob[0] = IMAGE_CEE_CS_CALLCONV_DEFAULT;
 		return newSignatureBlob;
 	} else {
-		// Debugger::printf(L"non static method remplacement");
+		// DebugPrintf(L"non static method remplacement");
 		ComPtr<IMetaDataImport> metaDataImport;
 		hrCheck(info->GetTokenAndMetaDataFromFunction(fi->get_FunctionID(), IID_IMetaDataImport, (LPUNKNOWN *)&metaDataImport, nullptr));
 
@@ -141,7 +141,7 @@ BYTE Tranpoline::calcNewMethodArgCount() {
 	}
 
 	if (newArguments > 0xFF) {
-		Debugger::printf(L"too many arguments");
+		DebugPrintf(L"too many arguments");
 		exit(-1);
 	}
 
